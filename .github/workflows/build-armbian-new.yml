@@ -68,8 +68,8 @@ on:
         description: "Set armbian custom name."
         required: false
         default: ""
-#  schedule:
-#  - cron: '30 17 * * *'
+  schedule:
+  - cron: '30 17 * * *'
 
 env:
   TZ: Asia/Shanghai
