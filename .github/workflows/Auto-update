@@ -1,0 +1,63 @@
+name: Auto-update
+
+on:
+#  release:
+#    types: published
+#  push:
+#    branches:
+#      - master
+#    paths:
+#      - '.config'
+  schedule:
+    - cron: 30 16 * * *
+  workflow_dispatch:
+    inputs:
+      SSH:
+        description: 'SSH connection to Actions?'
+        required: false
+        default: 'false'   
+        
+env:
+  REPO_BRANCH: master
+  TZ: Asia/Shanghai
+  
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+      
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.SSH == 'true' || github.event.inputs.SSH  == '1') 
+      
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo timedatectl set-timezone "$TZ"
+        pwd
+        chmod +x diy1.sh
+        ./diy1.sh
+      
+    - name: Commit
+      run: |
+        git config --global user.email 540224282@qq.com
+        git config --global user.name Yvan86
+        git add .
+        git commit -m"action:`date`"
+        git pull --rebase
+        
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}        
+                
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+        retain_days: 0
+        keep_minimum_runs: 5
+Footer
