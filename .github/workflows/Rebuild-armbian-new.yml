@@ -7,7 +7,7 @@ on:
       armbian_url:
         description: "Set armbian path."
         required: false
-        default: "https://github.com/ophub/amlogic-s9xxx-armbian/releases/download/"
+        default: ""
       armbian_soc:
         description: "Select Amlogic SoC."
         required: false
