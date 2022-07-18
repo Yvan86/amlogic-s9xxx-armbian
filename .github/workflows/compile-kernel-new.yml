@@ -1,0 +1,85 @@
+name: Compile the kernel
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      kernel_repo:
+        description: "Choose to compile kernel sources"
+        required: false
+        default: "unifreq"
+        type: choice
+        options:
+          - unifreq
+          - kernel.org
+      kernel_version:
+        description: "Select kernel version"
+        required: false
+        default: "5.10.125_5.15.50"
+        type: choice
+        options:
+          - 5.4.200_5.10.125
+          - 5.10.125_5.15.50
+          - 5.15.45_5.18.5
+          - 5.4.200
+          - 5.10.125
+          - 5.15.50
+          - 5.18.5
+      kernel_auto:
+        description: "Auto use the latest kernel"
+        required: false
+        default: true
+        type: boolean
+      kernel_sign:
+        description: "Set the kernel custom signature"
+        required: false
+        default: "-ophub"
+      kernel_config:
+        description: "Set the path of kernel .config"
+        required: false
+        default: ""
+
+env:
+  TZ: America/New_York
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc 2>/dev/null
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install -y $(curl -fsSL https://is.gd/depend_ubuntu2204_armbian)
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          echo "COMPILE_STARTINGTIME=$(date +"%m.%d.%H%M")" >> $GITHUB_ENV
+      - name: Compile the kernel for Amlogic s9xxx
+        uses: ophub/amlogic-s9xxx-armbian@main
+        with:
+          build_target: kernel
+          kernel_repo: ${{ github.event.inputs.kernel_repo }}
+          kernel_version: ${{ github.event.inputs.kernel_version }}
+          kernel_auto: ${{ github.event.inputs.kernel_auto }}
+          kernel_sign: ${{ github.event.inputs.kernel_sign }}
+          kernel_config: ${{ github.event.inputs.kernel_config }}
+
+      - name: Upload Kernel to Release
+        uses: ncipollo/release-action@main
+        if: env.PACKAGED_STATUS == 'success' && !cancelled()
+        with:
+          tag: kernel_${{ env.PACKAGED_OUTPUTTAGS }}
+          artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            The kernel can be used to compile Armbian and OpenWrt.
+Footer
