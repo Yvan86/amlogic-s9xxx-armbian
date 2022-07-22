@@ -38,9 +38,10 @@ on:
         description: "Set the path of kernel .config"
         required: false
         default: ""
-      description: 'SSH connection to Actions?'
-      required: false
-      default: 'false' 
+      SSH:
+        description: 'SSH connection to Actions?'
+        required: false
+        default: 'false' 
 
 env:
   TZ: America/New_York
