@@ -60,4 +60,3 @@ jobs:
       with:
         retain_days: 0
         keep_minimum_runs: 5
-Footer
