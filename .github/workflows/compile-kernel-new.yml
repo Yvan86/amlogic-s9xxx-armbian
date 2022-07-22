@@ -38,6 +38,9 @@ on:
         description: "Set the path of kernel .config"
         required: false
         default: ""
+      description: 'SSH connection to Actions?'
+      required: false
+      default: 'false' 
 
 env:
   TZ: America/New_York
@@ -71,6 +74,10 @@ jobs:
           kernel_auto: ${{ github.event.inputs.kernel_auto }}
           kernel_sign: ${{ github.event.inputs.kernel_sign }}
           kernel_config: ${{ github.event.inputs.kernel_config }}
+          
+      - name: SSH connection to Actions
+        uses: P3TERX/ssh2actions@v1.0.0
+        if: (github.event.inputs.SSH == 'true' || github.event.inputs.SSH  == '1')
 
       - name: Upload Kernel to Release
         uses: ncipollo/release-action@main
