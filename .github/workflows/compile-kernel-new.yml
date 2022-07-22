@@ -65,6 +65,11 @@ jobs:
           sudo -E apt-get -qq clean
           sudo timedatectl set-timezone "$TZ"
           echo "COMPILE_STARTINGTIME=$(date +"%m.%d.%H%M")" >> $GITHUB_ENV
+                    
+      - name: SSH connection to Actions
+        uses: P3TERX/ssh2actions@v1.0.0
+        if: (github.event.inputs.SSH == 'true' || github.event.inputs.SSH  == '1')
+        
       - name: Compile the kernel for Amlogic s9xxx
         uses: ophub/amlogic-s9xxx-armbian@main
         with:
@@ -75,10 +80,6 @@ jobs:
           kernel_sign: ${{ github.event.inputs.kernel_sign }}
           kernel_config: ${{ github.event.inputs.kernel_config }}
           
-      - name: SSH connection to Actions
-        uses: P3TERX/ssh2actions@v1.0.0
-        if: (github.event.inputs.SSH == 'true' || github.event.inputs.SSH  == '1')
-
       - name: Upload Kernel to Release
         uses: ncipollo/release-action@main
         if: env.PACKAGED_STATUS == 'success' && !cancelled()
