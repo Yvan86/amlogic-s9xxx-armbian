@@ -1,4 +1,4 @@
-name: Auto-update
+name: Auto-update 
 
 on:
 #  release:
@@ -9,7 +9,7 @@ on:
 #    paths:
 #      - '.config'
   schedule:
-    - cron: 30 16 * * *
+  - cron: '30 16 * * *'
   workflow_dispatch:
     inputs:
       SSH:
