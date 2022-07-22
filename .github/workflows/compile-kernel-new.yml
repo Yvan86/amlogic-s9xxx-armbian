@@ -1,4 +1,4 @@
-name: Compile the kernel
+name: Compile the kernel new
 
 on:
   repository_dispatch:
