@@ -40,7 +40,6 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         pwd
         git clone https://github.com/ophub/amlogic-s9xxx-armbian
-        git rm -r --cache *
 
       
     - name: Commit
