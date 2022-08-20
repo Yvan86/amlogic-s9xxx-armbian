@@ -39,6 +39,7 @@ jobs:
       run: |
         sudo timedatectl set-timezone "$TZ"
         pwd
+        mkdir temp1
         cp -f ./.github/workflows/Auto-update.yml ./temp1/
         cp -f ./.github/workflows/*-new.yml ./temp1/
         shopt -s extglob
