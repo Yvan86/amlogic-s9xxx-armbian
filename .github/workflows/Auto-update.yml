@@ -45,8 +45,6 @@ jobs:
         svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./temp
         cp -r ./temp/* ./
         rm -rf ./temp
-        cd ./.github/workflows && ls -la
-
       
     - name: Commit
       run: |
