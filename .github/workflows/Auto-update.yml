@@ -39,8 +39,14 @@ jobs:
       run: |
         sudo timedatectl set-timezone "$TZ"
         pwd
-        chmod +x diy1.sh
-        ./diy1.sh
+        cd ..
+        mv ./amlogic-s9xxx-armbian ./amlogic-s9xxx-armbian1
+        git clone https://github.com/ophub/amlogic-s9xxx-armbian amlogic-s9xxx-armbian
+        cp ./amlogic-s9xxx-armbian1/.github/workflows/Auto-update.yml ./amlogic-s9xxx-armbian/.github/workflows/Auto-update.yml
+        cp ./amlogic-s9xxx-armbian1/.github/workflows/*-new.yml ./amlogic-s9xxx-armbian/.github/workflows/
+        cd ./amlogic-s9xxx-armbian
+        rm -rf ./.git
+        git rm -r --cache *
       
     - name: Commit
       run: |
