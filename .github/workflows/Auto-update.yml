@@ -39,16 +39,14 @@ jobs:
       run: |
         sudo timedatectl set-timezone "$TZ"
         pwd
+        cd ..
         mkdir temp1
-        cp -f ./.github/workflows/Auto-update.yml ./temp1/
-        cp -f ./.github/workflows/*-new.yml ./temp1/
-        shopt -s extglob
-        rm -rfv !(./temp1/*)
-        shopt -u extglob
-        svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./temp2
-        cp -r ./temp2/* ./
-        cp ./temp1/* ./.github/workflows/
-        rm -rf ./temp*
+        cp -fv ./amlogic-s9xxx-armbian/.github/workflows/Auto-update.yml ./temp1/
+        cp -fv ./amlogic-s9xxx-armbian/.github/workflows/*-new.yml ./temp1/
+        rm -rfv ./amlogic-s9xxx-armbian
+        svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./amlogic-s9xxx-armbian
+        cp ./temp1/* ./amlogic-s9xxx-armbian/.github/workflows/
+        cd ./amlogic-s9xxx-armbian
       
     - name: Commit
       run: |
