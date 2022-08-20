@@ -39,7 +39,9 @@ jobs:
       run: |
         sudo timedatectl set-timezone "$TZ"
         pwd
-        rm -rf ./amlogic-s9xxx-armbian
+        shopt -s extglob
+        rm -rfv !(./.github/workflows/Auto-update.yml|./.github/workflows/*-new.yml)
+        shopt -u extglob
         svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./temp
         cp -r ./temp/* ./
         rm -rf ./temp
