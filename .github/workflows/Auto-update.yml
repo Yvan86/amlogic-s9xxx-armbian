@@ -43,7 +43,7 @@ jobs:
         cp -f ./.github/workflows/Auto-update.yml ./temp1/
         cp -f ./.github/workflows/*-new.yml ./temp1/
         shopt -s extglob
-        rm -rfv !(./temp1)
+        rm -rfv !(./temp1/*)
         shopt -u extglob
         svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./temp2
         cp -r ./temp2/* ./
