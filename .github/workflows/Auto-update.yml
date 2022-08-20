@@ -44,10 +44,7 @@ jobs:
         git clone https://github.com/ophub/amlogic-s9xxx-armbian
         cp ./amlogic-s9xxx-armbian1/.github/workflows/Auto-update.yml ./amlogic-s9xxx-armbian/.github/workflows/Auto-update.yml
         cp ./amlogic-s9xxx-armbian1/.github/workflows/*-new.yml ./amlogic-s9xxx-armbian/.github/workflows/
-        cd ./amlogic-s9xxx-armbian
-        rm -rf .git
-        git init
-        git rm -r --cache *
+
       
     - name: Commit
       run: |
