@@ -46,7 +46,7 @@ jobs:
         rm -rfv ./amlogic-s9xxx-armbian
         svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./temp2
         mkdir ./amlogic-s9xxx-armbian
-        cp -rfv ./temp2/ ./amlogic-s9xxx-armbian
+        cp -rfv ./temp2/* ./amlogic-s9xxx-armbian/
         cp ./temp1/* ./amlogic-s9xxx-armbian/.github/workflows/
         cd ./amlogic-s9xxx-armbian
       
