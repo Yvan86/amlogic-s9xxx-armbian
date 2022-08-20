@@ -48,6 +48,7 @@ jobs:
         cp ./amlogic-s9xxx-armbian1/.github/workflows/*-new.yml ./amlogic-s9xxx-armbian/.github/workflows/
         cd ./amlogic-s9xxx-armbian
         ls -la
+        rm -rf .git
         git rm -r --cache *
       
     - name: Commit
