@@ -40,11 +40,9 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         pwd
         rm -rfv *
-        cd ..
-        svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./temp
-        cp -rfv ./temp/* ./amlogic-s9xxx-armbian/
-        cp -rfv ./temp/.github/workflows/* ./amlogic-s9xxx-armbian/.github/workflows/
-        cd ./amlogic-s9xxx-armbian
+        svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./amlogic-s9xxx-armbian
+        cp -rfv ./amlogic-s9xxx-armbian/ ./
+        rm -rfv ./github
       
     - name: Commit
       run: |
