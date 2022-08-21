@@ -41,7 +41,7 @@ jobs:
         pwd
         rm -rfv *
         svn export https://github.com/ophub/amlogic-s9xxx-armbian/trunk/ ./amlogic-s9xxx-armbian
-        cp -rfv ./amlogic-s9xxx-armbian/ ./
+        cp -rfv ./amlogic-s9xxx-armbian/* ./
         rm -rfv ./github
       
     - name: Commit
