@@ -28,7 +28,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@main
-      
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }} 
+        
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
       if: (github.event.inputs.SSH == 'true' || github.event.inputs.SSH  == '1') 
