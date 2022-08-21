@@ -53,7 +53,7 @@ jobs:
       run: |
         git config --global user.email 540224282@qq.com
         git config --global user.name Yvan86
-        git init --branch main
+        git init -b main
         git add .
         git commit -m"action:`date`"
         git pull --rebase
