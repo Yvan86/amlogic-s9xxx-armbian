@@ -61,7 +61,7 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         token: ${{ secrets.WORKFLOW_TOKEN }}        
-                
+        
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2
       with:
