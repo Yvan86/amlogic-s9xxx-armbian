@@ -30,7 +30,6 @@ jobs:
       uses: actions/checkout@main
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }} 
-        #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
         
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
