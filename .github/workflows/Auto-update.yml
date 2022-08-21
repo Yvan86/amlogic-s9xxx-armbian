@@ -56,7 +56,6 @@ jobs:
         git init -b main
         git add .
         git commit -m"action:`date`"
-        git branch --set-upstream-to=origin/main main
         git pull --rebase
         
     - name: Push changes
