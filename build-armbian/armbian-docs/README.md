@@ -36,6 +36,11 @@ View Chinese description  |  [查看中文说明](README.cn.md)
       - [12.7.3 Use OpenWrt in docker to establish interworking network](#1273-use-openwrt-in-docker-to-establish-interworking-network)
     - [12.8 How to add startup tasks](#128-how-to-add-startup-tasks)
     - [12.9 How to update service scripts in the system](#129-how-to-update-service-scripts-in-the-system)
+    - [12.10 How to make an android system partition table](#1210-how-to-make-an-android-system-partition-table)
+      - [12.10.1 Install the adb toolkit](#12101-install-the-adb-toolkit)
+      - [12.10.2 Check the Android partition](#12102-check-the-android-partition)
+      - [12.10.3 Make Android System Partition Table](#12103-make-android-system-partition-table)
+      - [12.10.4 Using the android system partition table](#12104-using-the-android-system-partition-table)
 
 ## 1. Register your own GitHub account
 
@@ -344,4 +349,63 @@ A custom startup task script file has been added to the system, and the path in 
 ### 12.9 How to update service scripts in the system
 
 Use the `armbian-sync` command to update all service scripts on the local system to the latest version.
+
+### 12.10 How to make an android system partition table
+
+When writing the Armbian system into the eMMC system, you need to confirm the Android system partition table of the device first, ensure that the data is written to a safe area, and try not to damage the Android system partition table, so as to avoid problems such as the system not being able to boot.
+
+#### 12.10.1 Install the adb toolkit
+
+adb toolkit is an Android system auxiliary tool developed by Google, which can help users manage Android devices, use it to flash machines, install related programs, etc. Click here [download adb](https://github.com/ophub/kernel/releases/download/tools/adb.tar.gz) toolkit, and then under Windows system, copy `adb.exe`, `AdbWinApi. dll` and `AdbWinUsbApi.dll` are copied to the `system32` and `syswow64` folders in the `c://windows/` directory, then open the `cmd` command panel, enter and execute `adb --version` command, if it is displayed, it means it can be used.
+
+#### 12.10.2 Check the Android partition
+
+We plug the TV box into the network cable, power supply, and turn on the monitor. After entering the Android TV system desktop normally, check its IP information in its network information. For the convenience of explanation, the following operation instructions will take 192.168.1.111 as the IP of the Android TV box. In the `cmd` panel, enter the following commands in turn and press Enter to execute, first look at the partition situation:
+
+```shell
+adb connect 192.168.1.111
+adb shell
+cd /dev/block
+ls -l | grep 179 | sort -t6
+```
+
+<img width="415" alt="image" src="https://user-images.githubusercontent.com/68696949/187029647-48b9ecbc-3932-47a4-b0a8-d781508e62d6.png">
+
+#### 12.10.3 Make Android System Partition Table
+
+Enter the following commands one by one to save the partition information files in the following locations:
+
+```shell
+cat /proc/partitions >/data/local/partitions.txt
+cat /proc/ntd >/data/local/ntd.txt
+ls -l /dev/block >/data/local/block.txt
+```
+
+<img width="310" alt="image" src="https://user-images.githubusercontent.com/68696949/187029771-034f6dc0-78a4-4e9d-b50f-2fbc6f213ec0.png">
+
+Create a folder named `mybox` in the root directory of the C drive of the local window computer, and enter the following commands in sequence in the `cmd` panel to download the files in the TV box to the local computer:
+
+```shell
+adb pull /data/local/partitions.txt C:\mybox
+adb pull /data/local/ntd.txt C:\mybox
+adb pull /data/local/block.txt C:\mybox
+```
+
+Open the excel template [android_partition_table_template.xlsx](android_partition_table_template.xlsx), we insert the data according to the three partition information files obtained above, and get the final Android system partition table of the device. Through the classification, `mixed areas` and `safe areas` are determined. The cache in the `mixed area` can be used as the `boot` partition of Armbian or OpenWrt system, and the `safe area` can be used as the `rootfs` partition.
+
+![Snip20220827_1](https://user-images.githubusercontent.com/68696949/187031866-ddc0f76a-810a-40ef-99d3-1484bd4092d6.png)
+
+#### 12.10.4 Using the android system partition table
+
+According to the specific location of `mixed area` and `secure area`, add the corresponding partition information in [armbian-install](../common-files/rootfs/usr/sbin/armbian-install) . Take the Android system partition table of the tx3 box we made as an example. After skipping the unsafe area of `68 MiB (BLANK1=68)`, set `256 MiB (BOOT=256)` as the `boot` partition in `cache`, after setting skip `1026 MiB (BLANK2=1026)` As the `rootfs` partition.
+
+In the tx3 box, its cache partition has 1120 MiB available, but the general `BOOT` partition setting 256 MiB is enough, and other parts are discarded; the `mixed area` has 1350 MiB space, so the value of `BLANK2` is `1350-68-256=1026` MiB, if the size of `BOOT` is adjusted, `BLANK2` can be changed according to the public calculation. The result is as follows:
+
+```shell
+# Set partition size (Unit: MiB)
+elif [[ "${AMLOGIC_SOC}" == "s905x3" ]]; then
+    BLANK1="68"
+    BOOT="256"
+    BLANK2="1026"
+```
 

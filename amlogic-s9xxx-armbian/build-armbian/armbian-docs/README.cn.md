@@ -36,6 +36,11 @@ Github Actions 是 Microsoft 推出的一项服务，它提供了性能配置非
       - [12.7.3 在 docker 中使用 OpenWrt 建立互通网络](#1273-在-docker-中使用-openwrt-建立互通网络)
     - [12.8 如何添加开机启动任务](#128-如何添加开机启动任务)
     - [12.9 如何更新系统中的服务脚本](#129-如何更新系统中的服务脚本)
+    - [12.10 如何制作安卓系统分区表](#1210-如何制作安卓系统分区表)
+      - [12.10.1 安装 adb 工具包](#12101-安装-adb-工具包)
+      - [12.10.2 查看安卓分区情况](#12102-查看安卓分区情况)
+      - [12.10.3 制作安卓系统分区表](#12103-制作安卓系统分区表)
+      - [12.10.4 使用安卓系统分区表](#12104-使用安卓系统分区表)
 
 ## 1. 注册自己的 Github 的账户
 
@@ -343,4 +348,64 @@ iface lo inet loopback
 ### 12.9 如何更新系统中的服务脚本
 
 使用 `armbian-sync` 命令可以一键将本地系统中的全部服务脚本更新到最新版本。
+
+### 12.10 如何制作安卓系统分区表
+
+将 Armbian 系统写入 eMMC 系统时，需要首先确认设备的安卓系统分区表，确保将数据写入至安全区域，尽量不要破坏安卓系统分区表，以免造成系统无法启动等问题。
+
+
+#### 12.10.1 安装 adb 工具包
+
+adb 工具包是由 Google 开发的一款安卓系统辅助工具，可以帮助用户管理安卓设备，使用它进行刷机、安装相关程序等。点此 [下载 adb](https://github.com/ophub/kernel/releases/download/tools/adb.tar.gz) 工具包，然后在 Windows 系统下，将 `adb.exe`，`AdbWinApi.dll` 和 `AdbWinUsbApi.dll` 三个文件拷⻉到 `c://windows/` 目录下的 `system32` 和 `syswow64` 两个文件夹内，然后 打开 `cmd` 命令面板，输入执行 `adb --version` 命令，如果有显示就表示可以使用了。
+
+#### 12.10.2 查看安卓分区情况
+
+我们将电视盒子插入网线、电源、显示器开机，正常进入安卓 TV 系统桌面后，在它的网络信息里查看其 IP 信息。为方便说明，下面以 192.168.1.111 作为安卓电视盒子的 IP 进行操作说明。在 `cmd` 面板中，依次输入下面的命令并回车执行，先看下分区情况：
+
+```shell
+adb connect 192.168.1.111
+adb shell
+cd /dev/block
+ls -l | grep 179 | sort -t6
+```
+
+<img width="415" alt="image" src="https://user-images.githubusercontent.com/68696949/187029647-48b9ecbc-3932-47a4-b0a8-d781508e62d6.png">
+
+#### 12.10.3 制作安卓系统分区表
+
+依次输入一下命令，将以下几个位置的分区信息文件保存下来：
+
+```shell
+cat /proc/partitions >/data/local/partitions.txt
+cat /proc/ntd >/data/local/ntd.txt
+ls -l /dev/block >/data/local/block.txt
+```
+
+<img width="310" alt="image" src="https://user-images.githubusercontent.com/68696949/187029771-034f6dc0-78a4-4e9d-b50f-2fbc6f213ec0.png">
+
+在本地 window 电脑的 C 盘根目录下创建名称为 `mybox` 的文件夹，在 `cmd` 面板中依次输入以下命令，把电视盒子里的文件下载到本地电脑：
+
+```shell
+adb pull /data/local/partitions.txt C:\mybox
+adb pull /data/local/ntd.txt C:\mybox
+adb pull /data/local/block.txt C:\mybox
+```
+
+打开 excel 模板 [android_partition_table_template.xlsx](android_partition_table_template.xlsx)，我们根据上面得到的三个分区信息文件把数据套进去，得到设备最终的安卓系统分区表。通过分类，确定了`混合区域`和`安全区域`。其中`混合区域`的 cache 中可以作为 Armbian 或 OpenWrt 系统的 `boot` 分区的使用，`安全区域`可以作为 `rootfs` 分区使用。
+
+![Snip20220827_1](https://user-images.githubusercontent.com/68696949/187031866-ddc0f76a-810a-40ef-99d3-1484bd4092d6.png)
+
+#### 12.10.4 使用安卓系统分区表
+
+根据`混合区域`和`安全区域`的具体位置，在 [armbian-install](../common-files/rootfs/usr/sbin/armbian-install) 中添加对应的分区信息。以我们制作的 tx3 盒子的安卓系统分区表为例。跳过 `68 MiB（BLANK1=68）` 的不安全区域，在 `cache` 里设置 `256 MiB（BOOT=256）`为 `boot` 分区，设置跳过 `1026 MiB（BLANK2=1026）` 后做为 `rootfs` 分区。
+
+在 tx3 盒子中，它的 cache 分区有 1120 MiB 可以使用，但一般 `BOOT` 分区设置 256 MiB 已经够用了，其他部分废弃不用了；`混合区域`有 1350 MiB 空间，所以 `BLANK2` 的值为 `1350-68-256=1026` MiB，如果把 `BOOT` 的大小调整了，`BLANK2` 可以根据公示计算更改。结果如下：
+
+```shell
+# Set partition size (Unit: MiB)
+elif [[ "${AMLOGIC_SOC}" == "s905x3" ]]; then
+    BLANK1="68"
+    BOOT="256"
+    BLANK2="1026"
+```
 
