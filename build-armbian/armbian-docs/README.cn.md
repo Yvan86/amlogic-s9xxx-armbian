@@ -479,26 +479,26 @@ adb pull /data/local/mybox_gpio.txt C:\mybox
 ```shell
 ~/make-uboot
     ├── amlogic-boot-fip
-    │   ├── x96max-plus                                     #自己创建目录
-    │   │   ├── asc.bin                                     #自己制作源文件
-    │   │   └── other-copy-files...                         #复制其他目录的文件
+    │   ├── x96max-plus                                     # 自己创建目录
+    │   │   ├── asc.bin                                     # 自己制作源文件
+    │   │   └── other-copy-files...                         # 复制其他目录的文件
     │   │
     │   ├── other-source-directories...
     │   └── other-source-files...
     │
     └── u-boot
         ├── configs
-        │   └── x96max-plus_defconfig                       #自己制作源文件
+        │   └── x96max-plus_defconfig                       # 自己制作源文件
         ├── arch
         │   └── arm
         │       └── dts
-        │           ├── meson-sm1-x96-max-plus-u-boot.dtsi  #自己制作源文件
-        │           ├── meson-sm1-x96-max-plus.dts          #自己制作源文件
-        │           └── Makefile                            #编辑
+        │           ├── meson-sm1-x96-max-plus-u-boot.dtsi  # 自己制作源文件
+        │           ├── meson-sm1-x96-max-plus.dts          # 自己制作源文件
+        │           └── Makefile                            # 编辑
         ├── fip
-        │   ├── u-boot.bin                                  #生成文件
-        │   └── u-boot.bin.sd.bin                           #生成文件
-        ├── u-boot.bin                                      #生成文件
+        │   ├── u-boot.bin                                  # 生成文件
+        │   └── u-boot.bin.sd.bin                           # 生成文件
+        ├── u-boot.bin                                      # 生成文件
         │
         ├── other-source-directories...
         └── other-source-files...
@@ -511,8 +511,8 @@ adb pull /data/local/mybox_gpio.txt C:\mybox
 最终生成的文件有两类：在 u-boot 根目录下的 `u-boot.bin` 文件是 `/boot` 目录下使用的不完整版 u-boot（对应仓库中的 [overload](../amlogic-u-boot/overload) 目录）；在 `fip` 目录下的 `u-boot.bin` 和 `u-boot.bin.sd.bin` 是 `/usr/lib/u-boot/` 目录下使用的完整版 u-boot 文件（对应仓库中的 [bootloader](../amlogic-u-boot/bootloader/) 目录），完整版的两个文件相差 512 字节，大的那个是填充了 512 字节的 0 在前面。
 
 <div style="width:100%;margin-top:40px;margin:5px;">
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/68696949/189039426-c127631f-77ca-4fcb-9fb6-4220045d712b.png">
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/68696949/189029320-e43a4cc9-b4b5-4de4-92fe-b17bd29020d0.png">
+<img width="400" alt="image" src="https://user-images.githubusercontent.com/68696949/189039426-c127631f-77ca-4fcb-9fb6-4220045d712b.png">
+<img width="400" alt="image" src="https://user-images.githubusercontent.com/68696949/189029320-e43a4cc9-b4b5-4de4-92fe-b17bd29020d0.png">
 </div>
 
 
