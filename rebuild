@@ -186,7 +186,7 @@ init_var() {
             ;;
         -n | --customName)
             if [[ -n "${2}" ]]; then
-                custom_name="${2}"
+                custom_name="${2// /}"
                 shift
             else
                 error_msg "Invalid -n parameter [ ${2} ]!"
@@ -427,7 +427,7 @@ refactor_files() {
     mkdir -p ${tag_bootfs} ${tag_rootfs} && sync
 
     # Copy the full Armbian image
-    cp -rf ${tmp_armbian}/* ${tag_rootfs} && sync
+    mv -f ${tmp_armbian}/* ${tag_rootfs} && sync
 
     # Unzip the relevant files
     tar -xJf "${armbian_path}/boot-common.tar.xz" -C ${tag_bootfs}
@@ -684,8 +684,8 @@ copy_files() {
         error_msg "mount ${loop_new}p1 failed!"
     fi
 
-    cp -rf ${tag_bootfs}/* ${build_image_bootfs}
-    cp -rf ${tag_rootfs}/* ${build_image_rootfs}
+    mv -f ${tag_bootfs}/* ${build_image_bootfs}
+    mv -f ${tag_rootfs}/* ${build_image_rootfs}
 
     sync && sleep 3
 }
@@ -723,9 +723,9 @@ loop_rebuild() {
         for k in ${build_kernel[*]}; do
             {
                 echo -n "(${j}.${i}) Start building Armbian [ ${b} - ${k} ]. "
-                now_remaining_space="$(df -hT ${make_path} | grep '/dev/' | awk '{print $5}' | sed 's/.$//' | awk -F "." '{print $1}')"
-                if [[ "${now_remaining_space}" -le "2" ]]; then
-                    echo "Remaining space is less than 2G, exit this build. \n"
+                now_remaining_space="$(df -Tk ${make_path} | grep '/dev/' | awk '{print $5}' | echo $(($(xargs) / 1024 / 1024)))"
+                if [[ "${now_remaining_space}" -le "3" ]]; then
+                    echo "Remaining space is less than 3G, exit this build. \n"
                     break
                 else
                     echo "Remaining space is ${now_remaining_space}G."
