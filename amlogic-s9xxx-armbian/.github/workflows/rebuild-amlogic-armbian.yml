@@ -3,24 +3,20 @@
 # Copyright (C) 2021 https://github.com/ophub/amlogic-s9xxx-armbian
 #==========================================================================
 
-name: Build armbian
+name: Rebuild amlogic armbian
 
 on:
   repository_dispatch:
   workflow_dispatch:
     inputs:
-      set_release:
-        description: "Select OS Release."
+      armbian_url:
+        description: "Set armbian path."
         required: false
-        default: "jammy"
-        type: choice
-        options:
-          - jammy
-          - bullseye
+        default: ""
       armbian_soc:
         description: "Select Amlogic SoC."
         required: false
-        default: "all"
+        default: "s905x3_s905d_s912"
         type: choice
         options:
           - all
@@ -65,7 +61,7 @@ on:
         required: false
         default: "2560"
       armbian_fstype:
-        description: "Select armbian rootfs type."
+        description: "Set armbian rootfs type."
         required: false
         default: "ext4"
         type: choice
@@ -100,42 +96,42 @@ jobs:
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
           sudo timedatectl set-timezone "${TZ}"
-          echo "ARMBIAN_RELEASE=${{ github.event.inputs.set_release }}" >> ${GITHUB_ENV}
-          echo "status=success" >> ${GITHUB_OUTPUT}
 
-      - name: Download source code
-        id: down
-        if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
-        run: |
-          git clone --depth 1 https://github.com/armbian/build.git
-          echo "status=success" >> ${GITHUB_OUTPUT}
+          # Get the url of the rebuild armbian file
+          armbian_url="${{ github.event.inputs.armbian_url }}"
+          if  [[ -z "${armbian_url}" ]]; then
+              armbian_site="https://armbian.tnahosting.net/dl/odroidn2/archive/"
+              armbian_name="Armbian.*jammy.*.img.xz"
+              armbian_file=$(curl -s "${armbian_site}" | grep -oE "${armbian_name}" | head -n 1)
+              if [[ -n "${armbian_file}" ]]; then
+                  armbian_url="${armbian_site}${armbian_file}"
+              else
+                  echo -e "Invalid download path: [ ${armbian_site} ]"
+                  exit 1
+              fi
+          fi
+          echo "ARMBIAN_URL=${armbian_url}" >> ${GITHUB_ENV}
 
-      - name: Compile Armbian [ ${{ env.ARMBIAN_RELEASE }} ]
-        id: compile
-        if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
-        run: |
-          # Compile method and parameter description: https://docs.armbian.com/Developer-Guide_Build-Options
-          cd build/
-          sudo ./compile.sh RELEASE=${{ env.ARMBIAN_RELEASE }} BOARD=odroidn2 BRANCH=current BUILD_DESKTOP=no HOST=armbian EXPERT=yes \
-                            BUILD_MINIMAL=no KERNEL_ONLY=no KERNEL_CONFIGURE=no CLEAN_LEVEL=make,debs COMPRESS_OUTPUTIMAGE="sha,gz"
-          echo "build_tag=Armbian_Aml_${{ env.ARMBIAN_RELEASE }}_$(date +"%m.%d.%H%M")" >> ${GITHUB_OUTPUT}
+          # Get the release name of the rebuild armbian file
+          set_release="_"
+          ARR_RELEASE=("jammy" "focal" "bullseye" "buster" "sid")
+          i=1
+          for r in ${ARR_RELEASE[*]}; do
+              if [[ "${armbian_url}" == *"${r}"* ]]; then
+                  set_release="_${r}_"
+                  break
+              fi
+              let i++
+          done
+          echo "ARMBIAN_RELEASE=${set_release}" >> ${GITHUB_ENV}
           echo "status=success" >> ${GITHUB_OUTPUT}
-
-      - name: Upload Armbian image to Release
-        uses: ncipollo/release-action@main
-        if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
-        with:
-          tag: ${{ steps.compile.outputs.build_tag }}
-          artifacts: build/output/images/*.img.gz
-          allowUpdates: true
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Rebuild Armbian for Amlogic s9xxx
         uses: ophub/amlogic-s9xxx-armbian@main
-        if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
+        if: ${{ env.ARMBIAN_URL }} != '' && !cancelled()
         with:
           build_target: armbian
-          armbian_path: build/output/images/*.img.gz
+          armbian_path: ${{ env.ARMBIAN_URL }}
           armbian_soc: ${{ github.event.inputs.armbian_soc }}
           armbian_kernel: ${{ github.event.inputs.armbian_kernel }}
           auto_kernel: ${{ github.event.inputs.auto_kernel }}
@@ -143,11 +139,11 @@ jobs:
           armbian_fstype: ${{ github.event.inputs.armbian_fstype }}
           armbian_sign: ${{ github.event.inputs.armbian_sign }}
 
-      - name: Upload Rebuild image to Release
+      - name: Upload Armbian image to Release
         uses: ncipollo/release-action@main
         if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
         with:
-          tag: ${{ steps.compile.outputs.build_tag }}
+          tag: Armbian_Aml${{ env.ARMBIAN_RELEASE }}${{ env.PACKAGED_OUTPUTDATE }}
           artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
           allowUpdates: true
           token: ${{ secrets.GH_TOKEN }}
@@ -158,4 +154,3 @@ jobs:
             Default password: 1234
             Install command: armbian-install
             Update command: armbian-update
-
