@@ -45,6 +45,7 @@ armbian_path="${build_path}/amlogic-armbian"
 kernel_path="${build_path}/amlogic-kernel"
 uboot_path="${build_path}/amlogic-u-boot"
 configfiles_path="${build_path}/common-files"
+amlogic_model_conf="${configfiles_path}/rootfs/etc/amlogic_model_database.conf"
 tmp_dir="${make_path}/tmp_dir"
 tmp_outpath="${tmp_dir}/tmp_out"
 tmp_armbian="${tmp_dir}/tmp_armbian"
@@ -63,7 +64,7 @@ kernel_repo="https://github.com/ophub/kernel/tree/main/pub"
 version_branch="stable"
 auto_kernel="true"
 build_kernel=("5.10.125" "5.15.50")
-# Set supported SoC
+# Set supported board
 build_armbian=(
     "a311d"
     "s922x" "s922x-n2" "s922x-reva"
@@ -100,7 +101,7 @@ error_msg() {
 }
 
 process_msg() {
-    echo -e " [\033[1;92m ${soc} - ${kernel} \033[0m] ${1}"
+    echo -e " [\033[1;92m ${board} - ${kernel} \033[0m] ${1}"
 }
 
 get_textoffset() {
@@ -127,7 +128,7 @@ init_var() {
             : ${ROOTFS_TYPE:="${ROOTFS_TYPE}"}
             : ${custom_name:="${custom_name}"}
             ;;
-        -b | --BuildSoC)
+        -b | --Board)
             if [[ -n "${2}" ]]; then
                 if [[ "${2}" != "all" ]]; then
                     unset build_armbian
@@ -274,111 +275,18 @@ confirm_version() {
     process_msg " (1/6) Confirm version type."
     cd ${make_path}
 
-    # Confirm soc branch
-    case "${soc}" in
-    a311d | khadas-vim3)
-        FDTFILE="meson-g12b-a311d-khadas-vim3.dtb"
-        UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
-        MAINLINE_UBOOT="khadas-vim3-u-boot.sd.bin"
-        ANDROID_UBOOT=""
-        ;;
-    s922x | belink | belinkpro | ugoos)
-        FDTFILE="meson-g12b-gtking-pro.dtb"
-        UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
-        MAINLINE_UBOOT="gtkingpro-u-boot.bin.sd.bin"
-        ANDROID_UBOOT=""
-        ;;
-    s922x-n2 | odroid-n2)
-        FDTFILE="meson-g12b-odroid-n2.dtb"
-        UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
-        MAINLINE_UBOOT="odroid-n2-u-boot.bin.sd.bin"
-        ANDROID_UBOOT=""
-        ;;
-    s922x-reva)
-        FDTFILE="meson-g12b-gtking-pro.dtb"
-        UBOOT_OVERLOAD="u-boot-gtkingpro-rev-a.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    s905x3 | tx3 | x96 | hk1 | h96 | ugoosx3)
-        FDTFILE="meson-sm1-x96-max-plus-100m.dtb"
-        UBOOT_OVERLOAD="u-boot-x96maxplus.bin"
-        MAINLINE_UBOOT="x96maxplus-u-boot.bin.sd.bin"
-        ANDROID_UBOOT="hk1box-bootloader.img"
-        ;;
-    s905x3-b | ta3pro)
-        FDTFILE="meson-sm1-skyworth-lb2004-a4091.dtb"
-        UBOOT_OVERLOAD="u-boot-skyworth-lb2004.bin"
-        MAINLINE_UBOOT="skyworth-lb2004-u-boot.bin.sd.bin"
-        ANDROID_UBOOT=""
-        ;;
-    s905x2 | x96max4g | x96max2g)
-        FDTFILE="meson-g12a-x96-max.dtb"
-        UBOOT_OVERLOAD="u-boot-x96max.bin"
-        MAINLINE_UBOOT="x96max-u-boot.bin.sd.bin"
-        ANDROID_UBOOT=""
-        ;;
-    s905x2-km3)
-        FDTFILE="meson-g12a-sei510.dtb"
-        UBOOT_OVERLOAD="u-boot-x96max.bin"
-        MAINLINE_UBOOT="x96max-u-boot.bin.sd.bin"
-        ANDROID_UBOOT=""
-        ;;
-    s912 | h96proplus | octopus)
-        FDTFILE="meson-gxm-octopus-planet.dtb"
-        UBOOT_OVERLOAD="u-boot-zyxq.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    s912-m8s | s912-m8s-pro-l)
-        FDTFILE="meson-gxm-q201.dtb"
-        UBOOT_OVERLOAD="u-boot-s905x-s912.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    s905d | n1)
-        FDTFILE="meson-gxl-s905d-phicomm-n1.dtb"
-        UBOOT_OVERLOAD="u-boot-n1.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT="u-boot-2015-phicomm-n1.bin"
-        ;;
-    s905d-ki)
-        FDTFILE="meson-gxl-s905d-mecool-ki-pro.dtb"
-        UBOOT_OVERLOAD="u-boot-p201.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    s905x | hg680p | tbee | b860h)
-        FDTFILE="meson-gxl-s905x-p212.dtb"
-        UBOOT_OVERLOAD="u-boot-p212.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    s905w | x96mini | tx3mini)
-        FDTFILE="meson-gxl-s905w-tx3-mini.dtb"
-        UBOOT_OVERLOAD="u-boot-s905x-s912.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    s905 | beelinkminimx | mxqpro+)
-        FDTFILE="meson-gxbb-beelink-mini-mx.dtb"
-        #FDTFILE="meson-gxbb-mxq-pro-plus.dtb"
-        #FDTFILE="meson-gxbb-vega-s95-telos.dtb"
-        UBOOT_OVERLOAD="u-boot-s905.bin"
-        #UBOOT_OVERLOAD="u-boot-p201.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    s905l3a | e900v22c | e900v22d)
-        FDTFILE="meson-g12a-s905l3a-e900v22c.dtb"
-        UBOOT_OVERLOAD="u-boot-e900v22c.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        ;;
-    *)
-        error_msg "Have no this soc: [ ${soc} ]"
-        ;;
-    esac
+    # Get ${board} config
+    [[ -f "${amlogic_model_conf}" ]] || error_msg "[ ${amlogic_model_conf} ] file is missing!"
+    board_conf="$(cat ${amlogic_model_conf} | sed -e 's/NA//g' -e 's/NULL//g' -e 's/[ ][ ]*//g' | grep -E "^[^#].*:${board}:yes$" | head -n 1)"
+    [[ -n "${board_conf}" ]] || error_msg "[ ${board} ] config is missing!"
+
+    # 1.ID  2.MODEL  3.SOC  4.FDTFILE  5.UBOOT_OVERLOAD  6.MAINLINE_UBOOT  7.ANDROID_UBOOT  8.FAMILY  9.BOARD  10.BUILD
+    SOC="$(echo ${board_conf} | awk -F':' '{print $3}')"
+    FDTFILE="$(echo ${board_conf} | awk -F':' '{print $4}')"
+    UBOOT_OVERLOAD="$(echo ${board_conf} | awk -F':' '{print $5}')"
+    MAINLINE_UBOOT="$(echo ${board_conf} | awk -F':' '{print $6}')"
+    ANDROID_UBOOT="$(echo ${board_conf} | awk -F':' '{print $7}')"
+    FAMILY="$(echo ${board_conf} | awk -F':' '{print $8}')"
 
     # Confirm UUID
     ROOTFS_UUID="$(cat /proc/sys/kernel/random/uuid)"
@@ -398,7 +306,7 @@ extract_armbian() {
     rm -rf ${tmp_dir} 2>/dev/null
     mkdir -p ${tmp_outpath} ${tmp_armbian} ${tmp_build} ${tmp_aml_image}
 
-    armbian_image_file="${tmp_aml_image}/armbian_${soc}_${kernel}.img"
+    armbian_image_file="${tmp_aml_image}/armbian_${board}_${kernel}.img"
     rm -f ${armbian_image_file} 2>/dev/null
     cp -f "${armbian_outputpath}/${armbian_rebuild_name}" "${armbian_image_file}"
 
@@ -431,7 +339,7 @@ make_image() {
     cd ${make_path}
 
     # Make Amlogic s9xxx armbian
-    build_image_file="${tmp_outpath}/Armbian_${armbian_rebuild_version}_Aml_${soc}_${release_codename}_${kernel}${custom_name}_$(date +"%Y.%m.%d").img"
+    build_image_file="${tmp_outpath}/Armbian_${armbian_rebuild_version}_Aml_${board}_${release_codename}_${kernel}${custom_name}_$(date +"%Y.%m.%d").img"
     rm -f ${build_image_file} 2>/dev/null
 
     IMG_SIZE="$((SKIP_MB + BOOT_MB + ROOT_MB))"
@@ -456,11 +364,11 @@ make_image() {
     if [[ -n "${MAINLINE_UBOOT}" && -f "${uboot_path}/bootloader/${MAINLINE_UBOOT}" ]]; then
         dd if="${uboot_path}/bootloader/${MAINLINE_UBOOT}" of="${loop_new}" conv=fsync bs=1 count=444 2>/dev/null
         dd if="${uboot_path}/bootloader/${MAINLINE_UBOOT}" of="${loop_new}" conv=fsync bs=512 skip=1 seek=1 2>/dev/null
-        #echo -e "${INFO} For [ ${soc} ] write Mainline bootloader: ${MAINLINE_UBOOT}"
+        #echo -e "${INFO} For [ ${board} ] write Mainline bootloader: ${MAINLINE_UBOOT}"
     elif [[ -n "${ANDROID_UBOOT}" && -f "${uboot_path}/bootloader/${ANDROID_UBOOT}" ]]; then
         dd if="${uboot_path}/bootloader/${ANDROID_UBOOT}" of="${loop_new}" conv=fsync bs=1 count=444 2>/dev/null
         dd if="${uboot_path}/bootloader/${ANDROID_UBOOT}" of="${loop_new}" conv=fsync bs=512 skip=1 seek=1 2>/dev/null
-        #echo -e "${INFO} For [ ${soc} ] write Android bootloader: ${ANDROID_UBOOT}"
+        #echo -e "${INFO} For [ ${board} ] write Android bootloader: ${ANDROID_UBOOT}"
     fi
 }
 
@@ -550,7 +458,7 @@ refactor_files() {
         cp -f ${UBOOT_OVERLOAD} u-boot.ext
         chmod +x u-boot.ext
     elif [[ "${K510}" -eq "1" ]] && [[ -z "${UBOOT_OVERLOAD}" || ! -f "${UBOOT_OVERLOAD}" ]]; then
-        error_msg "${soc} SoC does not support using ${kernel} kernel, missing u-boot."
+        error_msg "${board} Board does not support using ${kernel} kernel, missing u-boot."
     fi
 
     # Edit the uEnv.txt
@@ -615,12 +523,14 @@ refactor_files() {
     echo "PLATFORM='amlogic'" >>${ophub_release_file} 2>/dev/null
     echo "VERSION_CODEID='${release_codeid}'" >>${ophub_release_file} 2>/dev/null
     echo "VERSION_CODENAME='${release_codename}'" >>${ophub_release_file} 2>/dev/null
+    echo "SOC='${SOC}'" >>${ophub_release_file} 2>/dev/null
     echo "FDTFILE='${FDTFILE}'" >>${ophub_release_file} 2>/dev/null
     echo "UBOOT_OVERLOAD='${UBOOT_OVERLOAD}'" >>${ophub_release_file} 2>/dev/null
     echo "MAINLINE_UBOOT='/usr/lib/u-boot/${MAINLINE_UBOOT}'" >>${ophub_release_file} 2>/dev/null
     echo "ANDROID_UBOOT='/usr/lib/u-boot/${ANDROID_UBOOT}'" >>${ophub_release_file} 2>/dev/null
+    echo "FAMILY='${FAMILY}'" >>${ophub_release_file} 2>/dev/null
+    echo "BOARD='${board}'" >>${ophub_release_file} 2>/dev/null
     echo "KERNEL_VERSION='${kernel}'" >>${ophub_release_file} 2>/dev/null
-    echo "SOC='${soc}'" >>${ophub_release_file} 2>/dev/null
     echo "K510='${K510}'" >>${ophub_release_file} 2>/dev/null
     echo "ROOTFS_TYPE='${ROOTFS_TYPE}'" >>${ophub_release_file} 2>/dev/null
     echo "BOOT_CONF='uEnv.txt'" >>${ophub_release_file} 2>/dev/null
@@ -632,7 +542,7 @@ refactor_files() {
     sed -i "s|LABEL=ROOTFS.*|UUID=${ROOTFS_UUID}  /  ${ROOTFS_TYPE}  ${fstab_mount_string}  0 1|g" etc/fstab 2>/dev/null
 
     # Custom banner name
-    sed -i "s|BOARD_NAME=.*|BOARD_NAME=\"Aml ${soc}\"|g" ${armbian_release_file} 2>/dev/null
+    sed -i "s|BOARD_NAME=.*|BOARD_NAME=\"Aml ${SOC}\"|g" ${armbian_release_file} 2>/dev/null
 
     # Make the .bashrc take effect, Default shell settings file: /etc/default/useradd
     echo '[[ "${SHELL}" == *bash && -f "${HOME}/.bashrc" ]] && . ${HOME}/.bashrc' >>etc/profile
@@ -740,7 +650,7 @@ loop_rebuild() {
                 fi
 
                 # The loop variable assignment
-                soc="${b}"
+                board="${b}"
                 kernel="${k}"
 
                 # Execute the following functions in sequence
@@ -781,7 +691,7 @@ init_var "${@}"
 find_armbian
 # Download the latest kernel
 [[ "${auto_kernel}" == "true" ]] && download_kernel
-echo -e "${INFO} Armbian SoC List: [ $(echo ${build_armbian[*]} | tr "\n" " ") ]"
+echo -e "${INFO} Armbian Board List: [ $(echo ${build_armbian[*]} | tr "\n" " ") ]"
 echo -e "${INFO} Kernel List: [ $(echo ${build_kernel[*]} | tr "\n" " ") ]"
 echo -e "${INFO} ROOTFS Type: [ ${ROOTFS_TYPE} ] \n"
 # Loop to rebuild armbian firmware
