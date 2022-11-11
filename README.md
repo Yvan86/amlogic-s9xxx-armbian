@@ -40,9 +40,13 @@ Login in to armbian (default user: root, default password: 1234) → input comma
 armbian-install
 ```
 
-1. The mainline u-boot is not installed by default, you can choose to install it, specify it in the `first` input parameter, such as `armbian-install yes`
-2. By default, [ampart](https://github.com/7Ji/ampart) is used for eMMC partition table adjustment to maximize space usage. If you need to keep the original Android partition table, you can cancel it in the `second` parameter, such as `armbian-install yes no`
-3. By default, only the list of installation options of this family series is displayed. If you need to view the list of all devices, you can specify it in the `third` parameter, such as `armbian-install yes yes yes`
+| Optional  | Default  | Value    | Description           |
+| --------- | -------  | -------- | --------------------  |
+| -m        | no       | yes/no   | Use Mainline u-boot   |
+| -a        | yes      | yes/no   | Use [ampart](https://github.com/7Ji/ampart) tool |
+| -l        | no       | yes/no   | List show all         |
+
+Example: `armbian-install -m yes -a no`
 
 - ### Update Armbian Kernel
 
@@ -54,11 +58,15 @@ Login in to armbian → input command:
 armbian-update
 ```
 
-If there is a set of kernel files in the current directory, it will be updated with the kernel in the current directory (The 4 kernel files required for the update are `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-amlogic-xxx.tar.gz`, `modules-xxx.tar.gz`. Other kernel files are not required. If they exist at the same time, it will not affect the update. The system can accurately identify the required kernel files). If there is no kernel file in the current directory, it will query and download the latest kernel of the same series from the server for update.
+| Optional  | Default     | Value       | Description                   |
+| -------   | -------     | ----------  | ---------------------------   |
+| -k        | auto latest | [kernel name](https://github.com/ophub/kernel/tree/main/pub/stable)  | Set the kernel name |
+| -v        | stable      | stable/dev  | Set the kernel version branch |
+| -m        | no          | yes/no      | Use Mainline u-boot           |
 
-1. You can query the [optional kernel](https://github.com/ophub/kernel/tree/main/pub/stable) version and update the specified version in the `1` parameter: `armbian-update 5.10.125`. The optional kernel supported by the device can be freely updated, such as from 5.10.125 kernel to 5.15.50 kernel.
-2. When the kernel is updated, By default, download from [stable](https://github.com/ophub/kernel/tree/main/pub/stable) kernel version branch, if you download other [version branch](https://github.com/ophub/kernel/tree/main/pub), please specify according to the branch folder name in the `2` parameter, such as `armbian-update 5.10.125 dev`
-3. The mainline u-boot is not installed by default (some devices can get better support after installation), if you choose to install it, please specify it in the `3` input parameter, such as `armbian-update 5.10.125 stable yes`
+Example: `armbian-update -k 5.15.50 -v dev -m yes`
+
+If there is a set of kernel files in the current directory, it will be updated with the kernel in the current directory (The 4 kernel files required for the update are `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-amlogic-xxx.tar.gz`, `modules-xxx.tar.gz`. Other kernel files are not required. If they exist at the same time, it will not affect the update. The system can accurately identify the required kernel files). If there is no kernel file in the current directory, it will query and download the latest kernel of the same series from the server for update. The optional kernel supported by the device can be freely updated, such as from 5.10.125 kernel to 5.15.50 kernel.
 
 - ### Install common software
 
@@ -200,7 +208,7 @@ sudo apt-get install -y $(cat compile-kernel/tools/script/ubuntu2204-build-armbi
 
 - ### Description of localized packaging parameters
 
-| Parameter | Meaning | Description |
+| Optional | Meaning | Description |
 | ------ | ---------- | ----------------------------------------- |
 | -d     | Defaults   | Compile all cores and all firmware types. |
 | -b     | Board      | Specify the Build firmware type. Write the build firmware name individually, such as `-b s905x3` . Multiple firmware use `_` connect such as `-b s905x3_s905d` . Use `all` for all board models. You can use these codes: `a311d`, `s905x3`, `s905x3-b`, `s905x2`, `s905l3a`, `s905x`, `s905w`, `s905d`, `s905d-ki`, `s905l2`, `s905`, `s922x`, `s922x-n2`, `s912`, `s912-m8s` . Note: `s922x-reva` is `s922x-gtking-pro-rev_a`, `s922x-n2` is `s922x-odroid-n2`, `s912-m8s` is `s912-mecool-m8s-pro-l`, `s905d-ki` is `s905d-mecool-ki-pro`, `s905x2-km3` is `s905x2-mecool-km3` |
@@ -245,7 +253,7 @@ sudo apt-get install -y $(cat compile-kernel/tools/script/ubuntu2204-build-armbi
 
 For the related settings of GitHUB RELEASES_TOKEN, please refer to: [RELEASES_TOKEN](https://github.com/ophub/amlogic-s9xxx-openwrt/blob/main/router-config/README.md#3-fork-repository-and-set-releases_token). The relevant parameters correspond to the `local packaging command`, please refer to the above description.
 
-| Parameter          | Defaults          | Description                                                   |
+| Optional           | Defaults          | Description                                                   |
 |--------------------|-------------------|---------------------------------------------------------------|
 | armbian_path       | no                | Set the path of the original Armbian file, support the file path in the current workflow such as `build/output/images/*.img`, and also support the use of the network download address such as: `https://dl.armbian.com/*/Armbian_*.img.xz`  |
 | armbian_board      | s905d_s905x3      | Set the `board` of the packaged TV Boxes, function reference `-b`    |
