@@ -21,13 +21,14 @@ The list of devices supported by Amlogic TV Boxes, the configuration file in the
 <tr><td>111</td><td>TX9</td><td>s905x</td><td>meson-gxl-s905x-tx9.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1512Mhz,100Mb Nic,rtl8723cs WLAN,rtl8723bs Bluetooth</td></tr>
 <tr><td>112</td><td>M302A/M304A</td><td>s905l3b</td><td>meson-gxl-s905l3b-m302a.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L3-b,2+8G,USB2.0x2,LAN 100Mb Nic</td></tr>
 <tr><td>113</td><td>MGV2000</td><td>s905l2</td><td>meson-gxl-s905l2-x7-5g.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L2,2+8G,USB2.0x2,LAN 100Mb Nic,2.4/5GHz Wi-Fi + Bluetooth(Cdtech 47822BS/Realtek 8822BS,no work)</td></tr>
+<tr><td>114</td><td>Wojia-TV-IPBS9505</td><td>s905l2</td><td>meson-gxl-s905l2-ipbs9505.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L2,2+8G,USB2.0x2,LAN 100Mb Nic</td></tr>
 
 <tr><td>201</td><td>Octopus Planet</td><td>s912</td><td>meson-gxm-octopus-planet.dtb</td><td>u-boot-zyxq.bin</td><td>NA</td><td>NA</td><td>4C@1512Mhz+4C@1000Mhz,2GB Mem,1Gb Nic</td></tr>
 <tr><td>202</td><td>Octopus Planet (FAKE)</td><td>s912</td><td>meson-gxm-octopus-planet.dtb</td><td>u-boot-zyxq.bin</td><td>NA</td><td>bl-fake-octopus-planet.bin</td><td>4C@1512Mhz+4C@1000Mhz,2GB Mem,1Gb Nic</td></tr>
 <tr><td>203</td><td>H96 Pro Plus</td><td>s912</td><td>meson-gxm-octopus-planet.dtb</td><td>u-boot-zyxq.bin</td><td>NA</td><td>NA</td><td>4C@1512Mhz+4C@1000Mhz,2GB Mem,1Gb Nic</td></tr>
 <tr><td>204</td><td>Tanix-TX92</td><td>s912</td><td>meson-gxm-octopus-planet.dtb</td><td>u-boot-zyxq.bin</td><td>NA</td><td>NA</td><td>3GB DDR4 32GB eMMC,1.5GHz,5G WIFI,1Gb Nic</td></tr>
 <tr><td>205</td><td>VORKE-Z6-Plus</td><td>s912</td><td>meson-gxm-octopus-planet.dtb</td><td>u-boot-zyxq.bin</td><td>NA</td><td>NA</td><td>3GB DDR3 32GB eMMC5.0,1.5Ghz,TF CARD Support 1~32GB,1Gb Nic</td></tr>
-<tr><td>206</td><td>MECOOL M8S Pro L</td><td>s912</td><td>meson-gxm-q201.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>2G RAM,3G RAM,16G ROM,32G ROM,100Mb Nic</td></tr>
+<tr><td>206</td><td>MECOOL-M8S-Pro-L/Phicomm-T1</td><td>s912</td><td>meson-gxm-q201.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>2G RAM,3G RAM,16G ROM,32G ROM,100Mb Nic</td></tr>
 <tr><td>207</td><td>T95Z Plus</td><td>s912</td><td>meson-gxm-t95z-plus.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>3G+32G,Octa-Core,2.4/5.8G Dual-Band WiFi,1Gb Nic 64Bit BT4.0(Use: extlinux/extlinux.conf)</td></tr>
 <tr><td>208</td><td>TX9 Pro</td><td>s912</td><td>meson-gxm-tx9-pro.dtb</td><td>u-boot-zyxq.bin</td><td>NA</td><td>NA</td><td>4C@1512Mhz+4C@1000Mhz,3G RAM,32G ROM,Bluetooth 4.1,1Gb Nic,brcm43455 wifi</td></tr>
 <tr><td>209</td><td>Nexbox A1 & A95X</td><td>s912</td><td>meson-gxm-nexbox-a1.dtb</td><td>u-boot-p212.bin</td><td>NA</td><td>NA</td><td>2G DDR3 RAM 16G eMMC,1Gb Nic,qca9377 wifi(no work)</td></tr>
@@ -71,6 +72,7 @@ The list of devices supported by Amlogic TV Boxes, the configuration file in the
 <tr><td>520</td><td>A95XF3 Air 100Mb</td><td>s905x3</td><td>s905x3:meson-sm1-a95xf3-air.dtb</td><td>u-boot-x96maxplus.bin</td><td>NA</td><td>NA</td><td>4C@2100Mhz,2GB Mem,1Gb Nic,Wifi</td></tr>
 <tr><td>521</td><td>Tencent Aurora 3Pro</td><td>s905x3-b</td><td>meson-sm1-skyworth-lb2004-a4091.dtb</td><td>u-boot-skyworth-lb2004.bin</td><td>/usr/lib/u-boot/skyworth-lb2004-u-boot.bin.sd.bin</td><td>NA</td><td>4C@2100Mhz,4GB Mem,32G Rom,Model LB2004-A4091,MT7661RSN chip Wifi-5(mt7663s)/Bluetooth-5.0(btmtksdio),JL2121 1Gb Nic</td></tr>
 
-<tr><td>-</td><td>Beelink Mini MX 2G</td><td>s905</td><td>meson-gxbb-beelink-mini-mx.dtb</td><td>u-boot-s905.bin</td><td>NA</td><td>NA</td><td>Mali-450 GPU 2.4GHz / 5.8GHz WiFi 2GB RAM 16GB ROM,1Gb Nic</td></tr>
-<tr><td>-</td><td>MXQ PRO+ 4K</td><td>s905</td><td>meson-gxbb-mxq-pro-plus.dtb</td><td>u-boot-p201.bin</td><td>NA</td><td>NA</td><td>2GB RAM 16GB ROM 2.4G/5.8G,1Gb Nic</td></tr>
+<tr><td>a01</td><td>Beelink Mini MX 2G</td><td>s905</td><td>meson-gxbb-beelink-mini-mx.dtb</td><td>u-boot-s905.bin</td><td>NA</td><td>NA</td><td>Mali-450 GPU 2.4GHz / 5.8GHz WiFi 2GB RAM 16GB ROM,1Gb Nic</td></tr>
+<tr><td>a02</td><td>Sunvell-T95M</td><td>s905</td><td>meson-gxbb-p201.dtb</td><td>u-boot-s905.bin</td><td>NA</td><td>NA</td><td>2GB DDR3 + 8G eMMC, LAN 100Mb Nic, Realtek 8189ETV wireless (no drive)</td></tr>
+<tr><td>a03</td><td>MXQ PRO+ 4K</td><td>s905</td><td>meson-gxbb-mxq-pro-plus.dtb</td><td>u-boot-p201.bin</td><td>NA</td><td>NA</td><td>2GB RAM 16GB ROM 2.4G/5.8G,1Gb Nic</td></tr>
 </table>
