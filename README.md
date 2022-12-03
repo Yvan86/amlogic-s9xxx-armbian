@@ -1,10 +1,10 @@
-# Armbian for Amlogic TV Boxes
+# Armbian for Amlogic and Rockchip
 
 View Chinese description  |  [查看中文说明](README.cn.md)
 
 The [Armbian](https://www.armbian.com/) system is a lightweight Linux system based on Debian/Ubuntu built specifically for ARM chips. The Armbian system is lean, clean, and 100% compatible and inherits the functions and rich software ecosystem of the Debian/Ubuntu system. It can run safely and stably in TF/SD/USB and the eMMC of the device.
 
-Now you can replace the Android TV system of the TV box with the Amlogic chip with the Armbian system, making it a powerful server. This project builds Armbian system for Amlogic s9xxx TV box. including install to EMMC and update related functions. Support Amlogic s9xxx TV Boxes are ***`a311d, s922x, s905x3, s905x2, s905l3a, s912, s905d, s905x, s905w, s905`***, etc. such as ***`Belink GT-King, Belink GT-King Pro, UGOOS AM6 Plus, X96-Max+, HK1-Box, H96-Max-X3, Phicomm-N1, Octopus-Planet, Fiberhome HG680P, ZTE B860H`***, etc. Please refer to the [Armbian Documentation](build-armbian/armbian-docs) for the usage method.
+Now you can replace the Android TV system of the TV box with the Amlogic chip with the Armbian system, making it a powerful server. This project builds Armbian system for Amlogic s9xxx and Rockchip boxes. including install to EMMC and update related functions. Support Amlogic s9xxx TV Boxes are ***`a311d, s922x, s905x3, s905x2, s905l3a, s912, s905d, s905x, s905w, s905`***, etc. such as ***`Belink GT-King, Belink GT-King Pro, UGOOS AM6 Plus, X96-Max+, HK1-Box, H96-Max-X3, Phicomm-N1, Octopus-Planet, Fiberhome HG680P, ZTE B860H`***, etc. and Rockchip ***`BeikeYun`, `Chainedbox L1 Pro`, `FastRhino R66S/R68S`, `Radxa 5b`***, etc. Please refer to the [Armbian Documentation](build-armbian/documents) for the usage method.
 
 The latest version of the Armbian firmware can be downloaded in [Releases](https://github.com/ophub/amlogic-s9xxx-armbian/releases). Welcome to `Fork` and personalize it. If it is useful to you, you can click on the `Star` in the upper right corner of the warehouse to show your support.
 
@@ -21,13 +21,13 @@ The latest version of the Armbian firmware can be downloaded in [Releases](https
 | s905x | [HG680P](https://tokopedia.link/HbrIbqQcGgb), [B860H](https://www.zte.com.cn/global/products/cocloud/201707261551/IP-STB/ZXV10-B860H), [TBee-Box](https://www.tbee.com/product/tbee-box/), [T95](https://www.gearbest.com/tv-box-mini-pc/pp_268277.html), [TX9](https://github.com/ophub/amlogic-s9xxx-armbian/issues/645), [Q96-mini(s905l-b)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/734) | All | armbian_aml_s905x_*.img |
 | s905w | [X96-Mini](https://www.gearbest.com/tv-box/pp_3008306149708795.html), [TX3-Mini](https://www.gearbest.com/tv-box/pp_009748238474.html), [W95](https://www.gearbest.com/tv-box/pp_736121.html) | 5.4.y/5.15.y | armbian_aml_s905w_*.img |
 | s905 | [Beelink-Mini-MX-2G](https://www.gearbest.com/tv-box-mini-pc/pp_321409.html), [Sunvell-T95M](https://github.com/ophub/amlogic-s9xxx-openwrt/issues/337), [MXQ-Pro+4K](https://www.gearbest.com/tv-box-mini-pc/pp_354313.html) | All | armbian_aml_s905_*.img |
-| s905l3a | [E900V22C/D](https://github.com/Calmact/e900v22c), [CM311-1a-YST](https://github.com/ophub/amlogic-s9xxx-armbian/issues/517), [M401A](https://github.com/ophub/amlogic-s9xxx-armbian/issues/732), [M411A](https://blog.csdn.net/fatiaozhang9527/article/details/126388479), [UNT403A](https://blog.csdn.net/wjf149575296/article/details/123947681), [UNT413A](https://blog.csdn.net/fatiaozhang9527/article/details/122232733) | All | armbian_aml_s905l3a_*.img |
+| s905l3a | [E900V22C/D](https://github.com/Calmact/e900v22c), [CM311-1a-YST](https://github.com/ophub/amlogic-s9xxx-armbian/issues/517), [M401A](https://github.com/ophub/amlogic-s9xxx-armbian/issues/732), [M411A](https://blog.csdn.net/fatiaozhang9527/article/details/126388479), [UNT403A](https://blog.csdn.net/wjf149575296/article/details/123947681), [UNT413A](https://blog.csdn.net/fatiaozhang9527/article/details/122232733), [ZTE-B863AV3.2-M(s905l3a)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/741) | All | armbian_aml_s905l3a_*.img |
 | s905l3b/l2 | [M302A/M304A(s905l3-b)](https://blog.csdn.net/fatiaozhang9527/article/details/122006745), [MGV2000(s905l2)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/648), [Wojia-TV-IPBS9505(s905l2)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/648) | All | armbian_aml_s905l2_*.img |
 | rk3588 | [Radxa-Rock5B](https://wiki.radxa.com/Rock5/5b) | [rk3588](https://github.com/ophub/kernel/tree/main/pub/rk3588) | armbian_rockchip_rock5b.img |
 | rk3568 | [FastRhino-R66S](https://r68s.cn/), [FastRhino-R68S](https://r68s.cn/) | [6.0.y](https://github.com/ophub/kernel/tree/main/pub/stable) | armbian_rockchip_r66s.img <br />armbian_rockchip_r68s.img |
 | rk3328 | [beikeyun](https://www.cnblogs.com/milton/p/15391525.html), [l1pro](https://post.smzdm.com/p/a4wkdo7l/) | All | armbian_rockchip_beikeyun.img <br />armbian_rockchip_l1pro.img |
 
-💡Tip: The current ***`s905w`*** series of TV Boxes only support the use of the `5.4.y/5.15.y` kernel, Other types of TV Boxes can use optional kernel versions. Currently ***`s905`*** TV Boxes can only be used in `TF/SD/USB`, other types of TV Boxes also support writing to `EMMC`. Please refer to the [instructions](build-armbian/armbian-docs/amlogic_model_database.md) for dtb and u-boot of each device.
+💡Tip: The current ***`s905w`*** series of TV Boxes only support the use of the `5.4.y/5.15.y` kernel, Other types of TV Boxes can use optional kernel versions. Currently ***`s905`*** TV Boxes can only be used in `TF/SD/USB`, other types of TV Boxes also support writing to `EMMC`. Please refer to the [instructions](build-armbian/documents/amlogic_model_database.md) for dtb and u-boot of each device.
 
 ## Install to EMMC and update instructions
 
@@ -35,7 +35,9 @@ Choose the corresponding firmware according to your box. Then write the IMG file
 
 - ### Install Armbian to EMMC
 
-Login in to armbian (default user: root, default password: 1234) → input command:
+1. For the installation method of the `Rockchip` platform, please refer to [Chapter 8.2](build-armbian/documents) in the documentation。
+
+2. `Amlogic` platform，Login in to armbian (default user: root, default password: 1234) → input command:
 
 ```yaml
 armbian-install
@@ -62,7 +64,7 @@ armbian-update
 | Optional  | Default     | Value       | Description                   |
 | -------   | -------     | ----------  | ---------------------------   |
 | -k        | auto latest | [kernel name](https://github.com/ophub/kernel/tree/main/pub/stable)  | Set the kernel name |
-| -v        | stable      | stable/dev  | Set the kernel version branch |
+| -v        | stable      | stable/rk3588/dev  | Set the kernel version branch |
 | -m        | no          | yes/no      | Use Mainline u-boot           |
 
 Example: `armbian-update -k 5.15.50 -v dev -m yes`
@@ -77,7 +79,7 @@ Login in to armbian → input command:
 armbian-software
 ```
 
-Use the `armbian-software -u` command to update the local software center list. According to the user's demand feedback in the [Issue](https://github.com/ophub/amlogic-s9xxx-armbian/issues), gradually integrate commonly used [software](build-armbian/common-files/rootfs/usr/share/ophub/armbian-software/software-list.conf) to achieve one-click install/update/uninstall and other shortcut operations. Including `docker images`, `desktop software`, `application services`, etc. See more [Description](build-armbian/armbian-docs/armbian_software.md).
+Use the `armbian-software -u` command to update the local software center list. According to the user's demand feedback in the [Issue](https://github.com/ophub/amlogic-s9xxx-armbian/issues), gradually integrate commonly used [software](build-armbian/armbian-files/common-files/usr/share/ophub/armbian-software/software-list.conf) to achieve one-click install/update/uninstall and other shortcut operations. Including `docker images`, `desktop software`, `application services`, etc. See more [Description](build-armbian/documents/armbian_software.md).
 
 - ### Modify Armbian Config
 
@@ -105,7 +107,7 @@ Login in to armbian → input command:
 armbian-led
 ```
 
-Debug according to [LED screen display control instructions](build-armbian/armbian-docs/led_screen_display_control.md).
+Debug according to [LED screen display control instructions](build-armbian/documents/led_screen_display_control.md).
 
 - ### Use Armbian in TF/SD/USB
 
@@ -187,7 +189,7 @@ To update all service scripts in the local system to the latest version, you can
 armbian-sync
 ```
 
-In the use of Armbian, please refer to [armbian-docs](build-armbian/armbian-docs) for some common problems that may be encountered.
+In the use of Armbian, please refer to [documents](build-armbian/documents) for some common problems that may be encountered.
 
 ## Local build instructions
 
@@ -215,7 +217,7 @@ sudo apt-get install -y $(cat compile-kernel/tools/script/ubuntu2204-build-armbi
 | -b     | Board      | Specify the Build firmware type. Write the build firmware name individually, such as `-b s905x3` . Multiple firmware use `_` connect such as `-b s905x3_s905d` . Use `all` for all board models. You can use these codes: `a311d`, `s905x3`, `s905x3-b`, `s905x2`, `s905l3a`, `s905x`, `s905w`, `s905d`, `s905d-ki`, `s905l2`, `s905`, `s922x`, `s922x-n2`, `s912`, `s912-m8s` . Note: `s922x-reva` is `s922x-gtking-pro-rev_a`, `s922x-n2` is `s922x-odroid-n2`, `s912-m8s` is `s912-mecool-m8s-pro-l`, `s905d-ki` is `s905d-mecool-ki-pro`, `s905x2-km3` is `s905x2-mecool-km3` |
 | -k     | Kernel     | Specify the [kernel version](https://github.com/ophub/kernel/tree/main/pub/stable), Such as `-k 5.10.125` . Multiple kernel use `_` connection such as `-k 5.10.125_5.15.50` |
 | -a     | AutoKernel | Set whether to automatically adopt the latest version of the kernel of the same series. When it is `true`, it will automatically find in the kernel library whether there is an updated version of the kernel specified in `-k` such as 5.10.125 version. If there is the latest version of same series, it will automatically Replace with the latest version. When set to `false`, the specified version of the kernel will be compiled. Default value: `true` |
-| -v     | Version    | Specify the [version branch](https://github.com/ophub/kernel/tree/main/pub), Such as `-v stable`. The specified name must be the same as the branch directory name. The `stable` branch version is used by default. |
+| -v     | Version    | Specify the [version branch](https://github.com/ophub/kernel/tree/main/pub), Such as `-v stable_rk3588`. The specified name must be the same as the branch directory name. The `stable_rk3588` branch version is used by default. |
 | -s     | Size       | Specify the ROOTFS partition size for the firmware. The default is 2560MiB, and the specified size must be greater than 2048MiB. Such as `-s 2560` |
 | -t     | RootfsType | Set the file system type of the ROOTFS partition of the firmware, the default is `ext4` type, and the options are `ext4` or `btrfs` type. Such as `-t btrfs` |
 | -n   | CustomName | Set the signature part of the firmware name. The default value is empty. You can add signatures such as `_server`, `_gnome_desktop` or `_ophub` as needed. Do not include spaces when setting custom signatures. |
@@ -232,13 +234,13 @@ sudo apt-get install -y $(cat compile-kernel/tools/script/ubuntu2204-build-armbi
 
 ## Use GitHub Actions to build
 
-1. Workflows configuration in [.yml](.github/workflows/build-amlogic-armbian.yml) files. Set the armbian `board` you want to build in `Rebuild Armbian for amlogic s9xxx`.
+1. Workflows configuration in [.yml](.github/workflows/build-armbian.yml) files. Set the armbian `board` you want to build in `Rebuild Armbian for amlogic s9xxx`.
 
 2. New compilation: Select ***`Build amlogic armbian`*** on the [Actions](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page, According to the OS version officially supported by Armbian, In [RELEASE](https://docs.armbian.com/Developer-Guide_Build-Options/), you can choose Ubuntu series: `jammy`, or Debian series: `bullseye`, etc., Click the ***`Run workflow`*** button.
 
 3. Compile again: If there is an `Armbian_.*-trunk_.*.img.gz` file in [Releases](https://github.com/ophub/amlogic-s9xxx-armbian/releases), you do not need to compile it completely, you can directly use this file to `build amlogic armbian` of different board. Select ***`Use Releases file to build armbian`*** on the [Actions](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page. Click the ***`Run workflow`*** button.
 
-4. Use other Armbian firmware, such as [odroidn2](https://armbian.tnahosting.net/dl/odroidn2/archive/) provided by the official Armbian firmware download site [armbian.tnahosting.net](https://armbian.tnahosting.net/dl/), only by introducing the script of this repository in the process control file [.yml](.github/workflows/rebuild-amlogic-armbian.yml) for Armbian reconstruction, it can be adapted to the use of Amlogic S9xxx series TV Boxes. In the [Actions](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page, select ***`Rebuild amlogic armbian`***, and enter the Armbian network download url such as `https://dl.armbian.com/*/Armbian_*.img.xz`, or in the process control file [.yml](.github/workflows/rebuild-amlogic-armbian.yml), set the load path of the rebuild file through the `armbian_path` parameter. code show as below:
+4. Use other Armbian firmware, such as [odroidn2](https://armbian.tnahosting.net/dl/odroidn2/archive/) provided by the official Armbian firmware download site [armbian.tnahosting.net](https://armbian.tnahosting.net/dl/), only by introducing the script of this repository in the process control file [.yml](.github/workflows/rebuild-armbian.yml) for Armbian reconstruction, it can be adapted to the use of Amlogic S9xxx series TV Boxes. In the [Actions](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page, select ***`Rebuild amlogic armbian`***, and enter the Armbian network download url such as `https://dl.armbian.com/*/Armbian_*.img.xz`, or in the process control file [.yml](.github/workflows/rebuild-armbian.yml), set the load path of the rebuild file through the `armbian_path` parameter. code show as below:
 
 ```yaml
 - name: Rebuild the Armbian for Amlogic s9xxx
@@ -260,14 +262,14 @@ For the related settings of GitHUB RELEASES_TOKEN, please refer to: [RELEASES_TO
 | armbian_board      | s905d_s905x3      | Set the `board` of the packaged TV Boxes, function reference `-b`    |
 | armbian_kernel     | 5.10.125_5.15.50  | Set kernel [version](https://github.com/ophub/kernel/tree/main/pub/stable), function reference `-k`        |
 | auto_kernel        | true              | Set whether to automatically use the latest version of the same series of kernels, function reference `-a` |
-| version_branch     | stable            | Specify the name of the kernel [version branch](https://github.com/ophub/kernel/tree/main/pub), function reference `-v` |
+| version_branch     | stable_rk3588     | Specify the name of the kernel [version branch](https://github.com/ophub/kernel/tree/main/pub), function reference `-v` |
 | armbian_size       | 2560              | Set the size of the firmware ROOTFS partition, function reference `-s`             |
 | armbian_fstype     | ext4              | Set the file system type of the firmware ROOTFS partition, function reference `-t` |
 | armbian_sign       | no                | Set the signature part of the firmware name, function reference `-n`               |
 
 - ### GitHub Actions Output variable description
 
-To upload to `Releases`, you need to add `GITHUB_TOKEN` and `GH_TOKEN` to the repository and set `Workflow read and write permissions`, see the [instructions for details](build-armbian/armbian-docs#2-set-the-privacy-variable-github_token).
+To upload to `Releases`, you need to add `GITHUB_TOKEN` and `GH_TOKEN` to the repository and set `Workflow read and write permissions`, see the [instructions for details](build-armbian/documents#2-set-the-privacy-variable-github_token).
 
 | Parameter                                | For example       | Description                         |
 |------------------------------------------|-------------------|-------------------------------------|
@@ -307,7 +309,6 @@ The `kernel` / `u-boot` and other resources used by this system are mainly copie
 
 - The [amlogic-s9xxx-openwrt](https://github.com/ophub/amlogic-s9xxx-openwrt) project provides the `OpenWrt` system used in the box, which is also applicable to the relevant devices that support Armbian.
 - [unifreq](https://github.com/unifreq/openwrt_packit) has made `OpenWrt` system for more boxes such as `Amlogic`, `Rockchip` and `Allwinner`, which is a benchmark in the box circle and is recommended for use.
-- [rockchip-armbian](https://github.com/ophub/rockchip-armbian) provides the method of making, installing and using Rockchip's Armbian system.
 - [Scirese](https://github.com/Scirese/alarm) tested the production, installation and use of `Arch Linux ARM` / `Manjaro` system in the Android TV boxes, please refer to the relevant instructions in his repository for details.
 - [7Ji](https://7ji.github.io/) published some articles on reverse engineering and development on the Amlogic platform in his blog, such as installing the ArchLinux ARM system in the way of ArchLinux, and introducing the startup mechanism of the Amlogic platform. In his [ampart](https://github.com/7Ji/ampart) project, he provided a partitioning tool that supports reading and editing Amlogic's eMMC partition table and DTB partitions, and can make 100% use of the eMMC space. The method of making and using `Arch Linux ARM` is provided in project [amlogic-s9xxx-archlinuxarm](https://github.com/7Ji/amlogic-s9xxx-archlinuxarm).
 
@@ -319,5 +320,5 @@ The `kernel` / `u-boot` and other resources used by this system are mainly copie
 
 ## License
 
-The amlogic-s9xxx-armbian © OPHUB is licensed under [GPL-2.0](https://github.com/ophub/amlogic-s9xxx-armbian/blob/main/LICENSE)
+The amlogic-s9xxx-armbian © OPHUB is licensed under [GPL-2.0](LICENSE)
 
