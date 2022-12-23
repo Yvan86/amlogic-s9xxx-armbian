@@ -28,6 +28,10 @@ inputs:
     description: "Auto use the latest kernel."
     required: false
     default: "true"
+  kernel_repo:
+    description: "Set kernel repository."
+    required: false
+    default: "https://github.com/ophub/kernel/tree/main/pub"
   armbian_size:
     description: "Set armbian rootfs size(Unit: MiB)."
     required: false
@@ -38,6 +42,10 @@ inputs:
     default: "ext4"
   armbian_sign:
     description: "Set armbian custom name."
+    required: false
+    default: ""
+  gh_token:
+    description: "Set the token."
     required: false
     default: ""
   # For compile kernel -----
@@ -57,8 +65,8 @@ inputs:
     description: "Set the kernel custom signature"
     required: false
     default: "-ophub"
-  kernel_repo:
-    description: "Select the kernel repository"
+  kernel_source:
+    description: "Select the kernel source code"
     required: false
     default: "unifreq"
   kernel_config:
@@ -112,9 +120,11 @@ runs:
             [[ -n "${{ inputs.armbian_kernel }}" ]] && make_command="${make_command} -k ${{ inputs.armbian_kernel }}"
             [[ -n "${{ inputs.auto_kernel }}" ]] && make_command="${make_command} -a ${{ inputs.auto_kernel }}"
             [[ -n "${{ inputs.version_branch }}" ]] && make_command="${make_command} -v ${{ inputs.version_branch }}"
+            [[ -n "${{ inputs.kernel_repo }}" ]] && make_command="${make_command} -r ${{ inputs.kernel_repo }}"
             [[ -n "${{ inputs.armbian_size }}" ]] && make_command="${make_command} -s ${{ inputs.armbian_size }}"
             [[ -n "${{ inputs.armbian_fstype }}" ]] && make_command="${make_command} -t ${{ inputs.armbian_fstype }}"
             [[ -n "${{ inputs.armbian_sign }}" ]] && make_command="${make_command} -n ${{ inputs.armbian_sign }}"
+            [[ -n "${{ inputs.gh_token }}" ]] && make_command="${make_command} -g ${{ inputs.gh_token }}"
             sudo ./rebuild ${make_command}
 
             cd ${GITHUB_ACTION_PATH}/${armbian_filepath}
@@ -155,7 +165,7 @@ runs:
             [[ -n "${{ inputs.kernel_auto }}" ]] && make_command="${make_command} -a ${{ inputs.kernel_auto }}"
             [[ -n "${{ inputs.kernel_package }}" ]] && make_command="${make_command} -p ${{ inputs.kernel_package }}"
             [[ -n "${{ inputs.kernel_sign }}" ]] && make_command="${make_command} -n ${{ inputs.kernel_sign }}"
-            [[ -n "${{ inputs.kernel_repo }}" ]] && make_command="${make_command} -r ${{ inputs.kernel_repo }}"
+            [[ -n "${{ inputs.kernel_source }}" ]] && make_command="${make_command} -r ${{ inputs.kernel_source }}"
             sudo ./recompile ${make_command}
 
             cd ${GITHUB_ACTION_PATH}
