@@ -104,8 +104,8 @@ ROOTFS_TYPE="ext4"
 # Custom name in firmware name: ${build_image_file}, such as _server, _dev, etc.
 custom_name="_server"
 
-# Get ${{ secrets.GH_TOKEN }} for api.github.com
-GH_TOKEN=""
+# Get gh_token for api.github.com
+gh_token=""
 
 # Set font color
 STEPS="[\033[95m STEPS \033[0m]"
@@ -218,9 +218,9 @@ init_var() {
                 error_msg "Invalid -n parameter [ ${2} ]!"
             fi
             ;;
-        -g | --GH_TOKEN)
+        -g | --gh_token)
             if [[ -n "${2}" ]]; then
-                GH_TOKEN="${2}"
+                gh_token="${2}"
                 shift
             else
                 error_msg "Invalid -g parameter [ ${2} ]!"
@@ -292,8 +292,8 @@ query_version() {
                 MAIN_LINE="$(echo ${kernel_var} | awk -F '.' '{print $1"."$2}')"
 
                 # Check the version on the server (e.g LATEST_VERSION="125")
-                if [[ -n "${GH_TOKEN}" ]]; then
-                    LATEST_VERSION="$(curl --header "authorization: Bearer ${GH_TOKEN}" -s "${server_kernel_url}/${k}" | grep "name" | grep -oE "${MAIN_LINE}.[0-9]+" | sed -e "s/${MAIN_LINE}.//g" | sort -n | sed -n '$p')"
+                if [[ -n "${gh_token}" ]]; then
+                    LATEST_VERSION="$(curl --header "authorization: Bearer ${gh_token}" -s "${server_kernel_url}/${k}" | grep "name" | grep -oE "${MAIN_LINE}.[0-9]+" | sed -e "s/${MAIN_LINE}.//g" | sort -n | sed -n '$p')"
                     query_api="Authenticated user request"
                 else
                     LATEST_VERSION="$(curl -s "${server_kernel_url}/${k}" | grep "name" | grep -oE "${MAIN_LINE}.[0-9]+" | sed -e "s/${MAIN_LINE}.//g" | sort -n | sed -n '$p')"
@@ -405,10 +405,10 @@ confirm_version() {
         # Set the type of file system
         if [[ "${ROOTFS_TYPE}" == "btrfs" ]]; then
             uenv_rootdev="UUID=${ROOTFS_UUID} rootflags=compress=zstd:6 rootfstype=btrfs"
-            fstab_string="defaults,noatime,compress=zstd:6"
+            fstab_string="discard,defaults,noatime,compress=zstd:6"
         else
             uenv_rootdev="UUID=${ROOTFS_UUID} rootflags=data=writeback rw rootfstype=ext4"
-            fstab_string="defaults,noatime,errors=remount-ro"
+            fstab_string="discard,defaults,noatime,errors=remount-ro"
         fi
     }
 
@@ -427,11 +427,11 @@ confirm_version() {
         if [[ "${ROOTFS_TYPE}" == "btrfs" ]]; then
             uenv_rootflags="compress=zstd:6"
             uenv_rootdev="UUID=${ROOTFS_UUID}"
-            fstab_string="defaults,noatime,compress=zstd:6"
+            fstab_string="discard,defaults,noatime,compress=zstd:6"
         else
             uenv_rootflags="rw,errors=remount-ro"
             uenv_rootdev="UUID=${ROOTFS_UUID}"
-            fstab_string="defaults,noatime,commit=600,errors=remount-ro"
+            fstab_string="discard,defaults,noatime,commit=600,errors=remount-ro"
         fi
     }
 }
@@ -450,9 +450,8 @@ extract_armbian() {
     loop_old="$(losetup -P -f --show "${armbian_image_file}")"
     [[ -n "${loop_old}" ]] || error_msg "losetup ${armbian_image_file} failed."
 
-    if ! mount ${loop_old}p1 ${tmp_armbian}; then
-        error_msg "mount ${loop_old}p1 failed!"
-    fi
+    mount -o discard ${loop_old}p1 ${tmp_armbian}
+    [[ "${?}" -eq "0" ]] || error_msg "mount ${loop_old}p1 failed!"
 
     cd ${tmp_armbian}
 
@@ -539,11 +538,21 @@ copy_files() {
     tag_rootfs="${tmp_build}/rootfs"
     mkdir -p ${tag_bootfs} ${tag_rootfs}
 
-    if ! mount -o discard ${loop_new}p1 ${tag_bootfs}; then
-        error_msg "mount ${loop_new}p1 failed!"
+    # Mount bootfs
+    if [[ "${PLATFORM}" == "amlogic" ]]; then
+        mount -t vfat -o discard ${loop_new}p1 ${tag_bootfs}
+    else
+        mount -t ext4 -o discard ${loop_new}p1 ${tag_bootfs}
     fi
-    if ! mount -o discard ${loop_new}p2 ${tag_rootfs}; then
-        error_msg "mount ${loop_new}p2 failed!"
+    [[ "${?}" -eq "0" ]] || error_msg "mount ${loop_new}p1 failed!"
+
+    # Mount rootfs
+    if [[ "${ROOTFS_TYPE}" == "btrfs" ]]; then
+        mount -t btrfs -o discard,compress=zstd:6 ${loop_new}p2 ${tag_rootfs}
+        [[ "${?}" -eq "0" ]] || error_msg "mount ${loop_new}p2 failed!"
+    else
+        mount -t ext4 -o discard ${loop_new}p2 ${tag_rootfs}
+        [[ "${?}" -eq "0" ]] || error_msg "mount ${loop_new}p2 failed!"
     fi
 
     # Copy the full Armbian image
@@ -712,7 +721,7 @@ refactor_files() {
     # Edit the etc/fstab
     [[ -f "etc/fstab" ]] || error_msg "The etc/fstab File does not exist."
     sed -i "s|LABEL=ROOTFS.*|UUID=${ROOTFS_UUID}  /      ${ROOTFS_TYPE}  ${fstab_string}  0 1|g" etc/fstab
-    [[ "${PLATFORM}" == "rockchip" ]] && sed -i "s|LABEL=BOOT.*|UUID=${BOOT_UUID}  /boot  ext4  defaults  0 2|g" etc/fstab
+    [[ "${PLATFORM}" == "rockchip" ]] && sed -i "s|LABEL=BOOT.*|UUID=${BOOT_UUID}  /boot  ext4  discard,defaults  0 2|g" etc/fstab
 
     # Update release information
     [[ -f "${armbian_release_file}" ]] && {
@@ -722,11 +731,19 @@ refactor_files() {
         sed -i "s|IMAGE_TYPE=.*|IMAGE_TYPE=stable|g" ${armbian_release_file}
     }
 
-    # Disable tip of the day for [ /etc/update-motd.d/35-armbian-tips ]
-    modt_tips="etc/default/armbian-motd"
-    [[ -f "${modt_tips}" ]] && sed -i 's|^MOTD_DISABLE=.*|MOTD_DISABLE="tips"|g' ${modt_tips}
+    # Disable tips of the day for [ /etc/update-motd.d/35-armbian-tips ]
+    motd_tips="etc/default/armbian-motd"
+    [[ -f "${motd_tips}" ]] && sed -i 's|^MOTD_DISABLE=.*|MOTD_DISABLE="tips"|g' ${motd_tips}
     quotes_cron="etc/cron.weekly/armbian-quotes"
     [[ -f "${quotes_cron}" ]] && sed -i "s|^curl |#curl |g" ${quotes_cron}
+
+    # Remove motd-news related services
+    rm -f usr/lib/systemd/system/motd-news.timer
+    rm -f usr/lib/systemd/system/motd-news.service
+    rm -f var/lib/systemd/deb-systemd-helper-enabled/timers.target.wants/motd-news.timer
+    rm -f var/lib/systemd/deb-systemd-helper-enabled/motd-news.timer.dsh-also
+    rm -f etc/systemd/system/timers.target.wants/motd-news.timer
+    rm -f etc/update-motd.d/50-motd-news
 
     # Make the .bashrc take effect, Default shell settings file: /etc/default/useradd
     echo '[[ "${SHELL}" == *bash && -f "${HOME}/.bashrc" ]] && . ${HOME}/.bashrc' >>etc/profile
