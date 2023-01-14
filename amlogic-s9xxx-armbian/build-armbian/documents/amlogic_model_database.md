@@ -20,7 +20,7 @@ The list of devices supported by Amlogic TV Boxes, the configuration file in the
 <tr><td>110</td><td>X96-Mini</td><td>s905w</td><td>meson-gxl-s905w-x96-mini.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1512Mhz,100Mb Nic</td></tr>
 <tr><td>111</td><td>TX9</td><td>s905x</td><td>meson-gxl-s905x-tx9.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1512Mhz,100Mb Nic,rtl8723cs WLAN,rtl8723bs Bluetooth</td></tr>
 <tr><td>112</td><td>M302A/M304A</td><td>s905l3b</td><td>meson-gxl-s905l3b-m302a.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L3-b,2+8G,USB2.0x2,LAN 100Mb Nic</td></tr>
-<tr><td>113</td><td>MGV2000</td><td>s905l2</td><td>meson-gxl-s905l2-x7-5g.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L2,2+8G,USB2.0x2,LAN 100Mb Nic,2.4/5GHz Wi-Fi + Bluetooth(Cdtech 47822BS/Realtek 8822BS,no work)</td></tr>
+<tr><td>113</td><td>MGV2000/MGV3000</td><td>s905l2</td><td>meson-gxl-s905l2-x7-5g.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L2,2+8G,USB2.0x2,LAN 100Mb Nic,2.4/5GHz Wi-Fi + Bluetooth(Cdtech 47822BS/Realtek 8822BS,no work)</td></tr>
 <tr><td>114</td><td>Wojia-TV-IPBS9505</td><td>s905l2</td><td>meson-gxl-s905l2-ipbs9505.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L2,2+8G,USB2.0x2,LAN 100Mb Nic</td></tr>
 <tr><td>115</td><td>Q96 mini</td><td>s905l-b</td><td>meson-gxl-s905x-p212.dtb</td><td>u-boot-s905x-s912.bin</td><td>NA</td><td>NA</td><td>1+8G,100Mb Nic</td></tr>
 <tr><td>116</td><td>CM311-1</td><td>s905l3</td><td>meson-gxl-s905l2-x7-5g.dtb</td><td>u-boot-p212.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L2,2+8G,USB2.0x2,LAN 100Mb Nic</td></tr>
@@ -45,7 +45,7 @@ The list of devices supported by Amlogic TV Boxes, the configuration file in the
 <tr><td>303</td><td>MECOOL KM3 4G</td><td>s905x2</td><td>meson-g12a-sei510.dtb</td><td>u-boot-x96max.bin</td><td>x96max-u-boot.bin.sd.bin</td><td>NA</td><td>4C@1908Mhz,4+64G/128G,2.4G/5G WiFi,Bluetooth 4.1,100Mb Nic</td></tr>
 <tr><td>304</td><td>E900V22C/D</td><td>s905l3a</td><td>meson-g12a-s905l3a-e900v22c.dtb</td><td>u-boot-e900v22c.bin</td><td>e900v22c-u-boot.bin.sd.bin</td><td>NA</td><td>4C@1908Mhz,S905L3A+B,2+8G,USB2.0x2,LAN 100Mb Nic,uwe5621ds wifi(no work)</td></tr>
 <tr><td>305</td><td>CM311-1a-YST</td><td>s905l3a</td><td>meson-g12a-s905l3a-cm311.dtb</td><td>u-boot-e900v22c.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L3A,2+16G,USB2.0x2,LAN 100Mb Nic,Bluetooth rtl8761b</td></tr>
-<tr><td>306</td><td>M401A/ZTE-B863AV3.2-M</td><td>s905l3a</td><td>meson-g12a-u200.dtb</td><td>u-boot-e900v22c.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L3A,2+16G,USB2.0x2,LAN 100Mb Nic</td></tr>
+<tr><td>306</td><td>M401A/ZTE-B863AV3.2-M</td><td>s905l3a</td><td>meson-g12a-s905l3a-m401a.dtb</td><td>u-boot-e900v22c.bin</td><td>NA</td><td>NA</td><td>4C@1908Mhz,S905L3A,2+16G,USB2.0x2,LAN 100Mb Nic</td></tr>
 
 <tr><td>401</td><td>Beelink GT-King</td><td>s922x</td><td>meson-g12b-gtking.dtb</td><td>u-boot-gtking.bin</td><td>gtking-u-boot.bin.sd.bin</td><td>NA</td><td>2C@1800Mhz(A53)+4C@1908Mhz(A73),4GB Mem,1Gb Nic,Wifi</td></tr>
 <tr><td>402</td><td>Beelink GT-King Pro</td><td>s922x</td><td>meson-g12b-gtking-pro.dtb</td><td>u-boot-gtkingpro.bin</td><td>gtkingpro-u-boot.bin.sd.bin</td><td>NA</td><td>2C@1800Mhz(A53)+4C@1908Mhz(A73),4GB Mem,1Gb Nic,Wifi</td></tr>
