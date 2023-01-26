@@ -21,14 +21,14 @@ The latest version of the Armbian firmware can be downloaded in [Releases](https
 | s905x | [HG680P](https://tokopedia.link/HbrIbqQcGgb), [B860H](https://www.zte.com.cn/global/products/cocloud/201707261551/IP-STB/ZXV10-B860H), [TBee-Box](https://www.tbee.com/product/tbee-box/), [T95](https://www.gearbest.com/tv-box-mini-pc/pp_268277.html), [TX9](https://github.com/ophub/amlogic-s9xxx-armbian/issues/645), [Q96-mini(s905l-b)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/734) | All | armbian_aml_s905x_*.img |
 | s905w | [X96-Mini](https://www.gearbest.com/tv-box/pp_3008306149708795.html), [TX3-Mini](https://www.gearbest.com/tv-box/pp_009748238474.html), [W95](https://www.gearbest.com/tv-box/pp_736121.html) | 5.4.y/5.15.y | armbian_aml_s905w_*.img |
 | s905 | [Beelink-Mini-MX-2G](https://www.gearbest.com/tv-box-mini-pc/pp_321409.html), [Sunvell-T95M](https://github.com/ophub/amlogic-s9xxx-openwrt/issues/337), [MXQ-Pro+4K](https://www.gearbest.com/tv-box-mini-pc/pp_354313.html) | All | armbian_aml_s905_*.img |
-| s905l3a | [E900V22C/D](https://github.com/Calmact/e900v22c), [CM311-1a-YST](https://github.com/ophub/amlogic-s9xxx-armbian/issues/517), [M401A](https://github.com/ophub/amlogic-s9xxx-armbian/issues/732), [M411A](https://blog.csdn.net/fatiaozhang9527/article/details/126388479), [UNT403A](https://blog.csdn.net/wjf149575296/article/details/123947681), [UNT413A](https://blog.csdn.net/fatiaozhang9527/article/details/122232733), [ZTE-B863AV3.2-M](https://github.com/ophub/amlogic-s9xxx-armbian/issues/741) | All | armbian_aml_s905l3a_*.img |
+| s905l3a | [E900V22C/D](https://github.com/Calmact/e900v22c), [CM311-1a-YST](https://github.com/ophub/amlogic-s9xxx-armbian/issues/517), [M401A](https://github.com/ophub/amlogic-s9xxx-armbian/issues/732), [M411A](https://blog.csdn.net/fatiaozhang9527/article/details/126388479), [UNT403A](https://github.com/ophub/amlogic-s9xxx-armbian/issues/970), [UNT413A](https://blog.csdn.net/fatiaozhang9527/article/details/122232733), [ZTE-B863AV3.2-M](https://github.com/ophub/amlogic-s9xxx-armbian/issues/741) | All | armbian_aml_s905l3a_*.img |
 | s905l3b | [M302A/M304A](https://blog.csdn.net/fatiaozhang9527/article/details/122006745), [E900V22E](https://github.com/ophub/amlogic-s9xxx-armbian/issues/939) | All | armbian_aml_s905l2_*.img |
 | s905l2/3 | [MGV2000](https://github.com/ophub/amlogic-s9xxx-armbian/issues/648), [MGV3000](https://github.com/ophub/amlogic-s9xxx-armbian/issues/921), [Wojia-TV-IPBS9505](https://github.com/ophub/amlogic-s9xxx-armbian/issues/648), [CM311-1(s905l3)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/763) | All | armbian_aml_s905l2_*.img |
 | rk3588 | [Radxa-Rock5B](https://wiki.radxa.com/Rock5/5b) | [rk3588](https://github.com/ophub/kernel/tree/main/pub/rk3588) | armbian_rockchip_rock5b.img |
 | rk3568 | [FastRhino-R66S](https://r68s.cn/), [FastRhino-R68S](https://r68s.cn/) | [6.x.y](https://github.com/ophub/kernel/tree/main/pub/stable) | armbian_rockchip_r66s.img <br />armbian_rockchip_r68s.img |
 | rk3328 | [beikeyun](https://www.cnblogs.com/milton/p/15391525.html), [l1pro](https://post.smzdm.com/p/a4wkdo7l/) | All | armbian_rockchip_beikeyun.img <br />armbian_rockchip_l1pro.img |
 
-💡Tip: The current ***`s905w`*** series of TV Boxes only support the use of the `5.4.y/5.15.y` kernel, Other types of TV Boxes can use optional kernel versions. Currently ***`s905`*** TV Boxes can only be used in `TF/SD/USB`, other types of TV Boxes also support writing to `EMMC`. Please refer to the [instructions](build-armbian/documents/amlogic_model_database.md) for dtb and u-boot of each device.
+💡Tip: The current ***`s905w`*** series of TV Boxes only support the use of the `5.4.y/5.15.y` kernel, Other types of TV Boxes can use optional kernel versions. Currently ***`s905`*** TV Boxes can only be used in `TF/SD/USB`, other types of TV Boxes also support writing to `EMMC`. For more information, please refer to [Description of Supported Device List](build-armbian/documents/amlogic_model_database.md).
 
 ## Install to EMMC and update instructions
 
@@ -67,10 +67,13 @@ armbian-update
 | -k        | auto latest | [kernel name](https://github.com/ophub/kernel/tree/main/pub/stable)  | Set the kernel name |
 | -v        | stable      | stable/rk3588/dev  | Set the kernel version branch |
 | -m        | no          | yes/no      | Use Mainline u-boot           |
+| -r        | ""          | ""          | [Rescue]. Update eMMC using the system kernel in USB |
 
 Example: `armbian-update -k 5.15.50 -v dev -m yes`
 
 If there is a set of kernel files in the current directory, it will be updated with the kernel in the current directory (The 4 kernel files required for the update are `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-amlogic-xxx.tar.gz`, `modules-xxx.tar.gz`. Other kernel files are not required. If they exist at the same time, it will not affect the update. The system can accurately identify the required kernel files). If there is no kernel file in the current directory, it will query and download the latest kernel of the same series from the server for update. The optional kernel supported by the device can be freely updated, such as from 5.10.125 kernel to 5.15.50 kernel.
+
+When the system cannot be started from eMMC due to incomplete updates and other problems caused by special reasons, you can start any kernel version of the Armian system from USB, and run the `armbian-update -r` command to update the system kernel in USB to eMMC to achieve the purpose of rescue.
 
 - ### Install common software
 
@@ -301,7 +304,7 @@ For the compilation method of the kernel, see [compile-kernel](compile-kernel)
     build_target: kernel
     kernel_version: 5.10.125_5.15.50
     kernel_auto: true
-    kernel_sign: -ophub
+    kernel_sign: -yourname
 ```
 
 ## Armbian Contributors
