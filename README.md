@@ -28,7 +28,7 @@ The latest version of the Armbian firmware can be downloaded in [Releases](https
 | rk3568 | [FastRhino-R66S](https://r68s.cn/), [FastRhino-R68S](https://r68s.cn/) | [6.x.y](https://github.com/ophub/kernel/tree/main/pub/stable) | armbian_rockchip_r66s.img <br />armbian_rockchip_r68s.img |
 | rk3328 | [beikeyun](https://www.cnblogs.com/milton/p/15391525.html), [l1pro](https://post.smzdm.com/p/a4wkdo7l/) | All | armbian_rockchip_beikeyun.img <br />armbian_rockchip_l1pro.img |
 
-💡Tip: The current ***`s905w`*** series of TV Boxes only support the use of the `5.4.y/5.15.y` kernel, Other types of TV Boxes can use optional kernel versions. Currently ***`s905`*** TV Boxes can only be used in `TF/SD/USB`, other types of TV Boxes also support writing to `EMMC`. For more information, please refer to [Description of Supported Device List](build-armbian/documents/amlogic_model_database.md).
+💡Tip: The ***`s905w`*** series of TV Boxes only support the use of the `5.4.y/5.15.y` kernel, Other types of TV Boxes can use optional kernel versions. The ***`s905`*** TV Boxes can only be used in `TF/SD/USB`, other types of TV Boxes also support writing to `EMMC`. For more information, please refer to [Description of Supported Device List](build-armbian/documents/amlogic_model_database.md).
 
 ## Install to EMMC and update instructions
 
@@ -73,7 +73,9 @@ Example: `armbian-update -k 5.15.50 -v dev -m yes`
 
 If there is a set of kernel files in the current directory, it will be updated with the kernel in the current directory (The 4 kernel files required for the update are `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-amlogic-xxx.tar.gz`, `modules-xxx.tar.gz`. Other kernel files are not required. If they exist at the same time, it will not affect the update. The system can accurately identify the required kernel files). If there is no kernel file in the current directory, it will query and download the latest kernel of the same series from the server for update. The optional kernel supported by the device can be freely updated, such as from 5.10.125 kernel to 5.15.50 kernel.
 
-When the system cannot be started from eMMC due to incomplete updates and other problems caused by special reasons, you can start any kernel version of the Armian system from USB, and run the `armbian-update -r` command to update the system kernel in USB to eMMC to achieve the purpose of rescue.
+When updating the kernel, it will automatically back up the kernel used by the current system. The storage path is in the `/ddbr/backup` directory, which can be deleted if not needed.
+
+💡 When the system cannot be started from eMMC due to incomplete updates and other problems caused by special reasons, you can start any kernel version of the Armian system from USB, and run the `armbian-update -r` command to update the system kernel in USB to eMMC to achieve the purpose of rescue.
 
 - ### Install common software
 
