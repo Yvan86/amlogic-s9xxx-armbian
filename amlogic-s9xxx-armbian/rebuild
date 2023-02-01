@@ -96,11 +96,12 @@ build_armbian=(
     "rock5b"
     "r66s" "r68s"
     "beikeyun" "l1pro"
+    "eaidk-610"
 )
 # Set the list of devices that must use the rk35xx kernel
 must_kernel_rk35xx=("rock5b")
 # Set the list of devices that must use the stable/6.x.y kernel
-must_kernel_6xy=("r66s" "r68s")
+must_kernel_6xy=("r66s" "r68s" "eaidk-610")
 
 # Set Armbian size (Unit: MiB, BOOT_MB >= 256, ROOT_MB >= 2048)
 BOOT_MB="256"
