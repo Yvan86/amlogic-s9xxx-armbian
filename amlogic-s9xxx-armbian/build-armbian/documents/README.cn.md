@@ -59,11 +59,11 @@ Github Actions 是 Microsoft 推出的一项服务，它提供了性能配置非
         - [12.7.2.4 修改网络连接 MAC 地址](#12724-修改网络连接-mac-地址)
     - [12.8 如何添加开机启动任务](#128-如何添加开机启动任务)
     - [12.9 如何更新系统中的服务脚本](#129-如何更新系统中的服务脚本)
-    - [12.10 如何获取eMMC上的安卓分区信息](#1210-如何获取emmc上的安卓系统分区信息)
+    - [12.10 如何获取 eMMC 上的安卓系统分区信息](#1210-如何获取-emmc-上的安卓系统分区信息)
       - [12.10.1 获取分区信息](#12101-获取分区信息)
       - [12.10.2 分区信息分享](#12102-分区信息分享)
       - [12.10.3 分区信息解读](#12103-分区信息解读)
-      - [12.10.4 用于eMMC安装](#12104-用于emmc安装)
+      - [12.10.4 用于 eMMC 安装](#12104-用于-emmc-安装)
     - [12.11 如何制作 u-boot 文件](#1211-如何制作-u-boot-文件)
       - [12.11.1 提取 bootloader 和 dtb 文件](#12111-提取-bootloader-和-dtb-文件)
       - [12.11.2 制作 acs.bin 文件](#12112-制作-acsbin-文件)
@@ -76,6 +76,7 @@ Github Actions 是 Microsoft 推出的一项服务，它提供了性能配置非
       - [12.15.2 添加 boot 文件](#12152-添加-boot-文件)
       - [12.15.3 添加 u-boot 文件](#12153-添加-u-boot-文件)
       - [12.15.4 添加流程控制文件](#12154-添加流程控制文件)
+    - [12.16 如何解决写入 eMMC 时 I/O 错误的问题](#1216-如何解决写入-emmc-时-io-错误的问题)
 
 ## 1. 注册自己的 Github 的账户
 
@@ -115,10 +116,9 @@ Personal center: Settings > Developer settings > Personal access tokens > Genera
   id: compile
   run: |
     cd build/
-    sudo chmod +x compile.sh
-    sudo ./compile.sh BRANCH=${{ env.ARMBIAN_BRANCH }} RELEASE=${{ env.ARMBIAN_RELEASE }} BOARD=${{ env.ARMBIAN_BOARD }} \
-                      BUILD_MINIMAL=no BUILD_DESKTOP=no HOST=armbian KERNEL_ONLY=no KERNEL_CONFIGURE=no \
-                      CLEAN_LEVEL=make,debs COMPRESS_OUTPUTIMAGE=sha
+    sudo ./compile.sh RELEASE=${{ env.ARMBIAN_RELEASE }} BOARD=odroidn2 BRANCH=current BUILD_ONLY=default HOST=armbian EXPERT=yes \
+                      BUILD_DESKTOP=no BUILD_MINIMAL=no KERNEL_CONFIGURE=no CLEAN_LEVEL="make,debs" COMPRESS_OUTPUTIMAGE="sha"
+    echo "build_tag=Armbian_${{ env.ARMBIAN_RELEASE }}_$(date +"%m.%d.%H%M")" >> ${GITHUB_OUTPUT}
     echo "status=success" >> ${GITHUB_OUTPUT}
 ```
 
@@ -724,65 +724,78 @@ ip -c -br address
 
 使用 `armbian-sync` 命令可以一键将本地系统中的全部服务脚本更新到最新版本。
 
-### 12.10 如何获取eMMC上的安卓系统分区信息
+### 12.10 如何获取 eMMC 上的安卓系统分区信息
 
 我们将 Armbian 系统写入 eMMC 系统时，需要首先确认设备的安卓系统分区表，确保将数据写入至安全区域，尽量不要破坏安卓系统分区表，以免造成系统无法启动等问题。如果写入了不安全的区域，会无法启动，或出现类似下面的错误：
 
+<div style="width:100%;margin-top:40px;margin:5px;">
 <img width="800" alt="image" src="https://user-images.githubusercontent.com/68696949/187075834-4ac40263-52ae-4538-a4b1-d6f0d5b9c856.png">
+</div>
 
 #### 12.10.1 获取分区信息
-如果你使用的是2022.11之后本仓库中发布的 Armbian，你可以复制粘贴以下命令来获得一个记录完整分区信息的网址（设备本身并不需要联网）
+
+如果你使用的是 2022.11 之后本仓库中发布的 Armbian，你可以复制粘贴以下命令来获得一个记录完整分区信息的网址（设备本身并不需要联网）
+
+```
+ampart /dev/mmcblk2 --mode webreport 2>/dev/null
+```
+
+*ampart 的 webreport 模式为 2023.02.03 发布的 v1.2 版本引入的，如果你使用上面的命令无输出，则可能为不支持直接输出网址的旧版，你可以转而使用下面这条命令：*
 
 ```
 echo "https://7ji.github.io/ampart-web-reporter/?dsnapshot=$(ampart /dev/mmcblk2 --mode dsnapshot 2>/dev/null | head -n 1)&esnapshot=$(ampart /dev/mmcblk2 --mode esnapshot 2>/dev/null | head -n 1)"
 ```
 
 得到的网址将会类似于下面这样：
+
 ```
-https://7ji.github.io/ampart-web-reporter/?esnapshot=bootloader:0:4194304:0 reserved:37748736:67108864:0 cache:113246208:754974720:2 env:876609536:8388608:0 logo:893386752:33554432:1 recovery:935329792:33554432:1 rsv:977272832:8388608:1 tee:994050048:8388608:1 crypt:1010827264:33554432:1 misc:1052770304:33554432:1 instaboot:1094713344:536870912:1 boot:1639972864:33554432:1 system:1681915904:1073741824:1 params:2764046336:67108864:2 bootfiles:2839543808:754974720:2 data:3602907136:4131389440:4&dsnapshot=logo::33554432:1 recovery::33554432:1 rsv::8388608:1 tee::8388608:1 crypt::33554432:1 misc::33554432:1 instaboot::536870912:1 boot::33554432:1 system::1073741824:1 cache::536870912:2 params::67108864:2 data::-1:4
+https://7ji.github.io/ampart-web-reporter/?esnapshot=bootloader:0:4194304:0%20reserved:37748736:67108864:0%20cache:113246208:754974720:2%20env:876609536:8388608:0%20logo:893386752:33554432:1%20recovery:935329792:33554432:1%20rsv:977272832:8388608:1%20tee:994050048:8388608:1%20crypt:1010827264:33554432:1%20misc:1052770304:33554432:1%20instaboot:1094713344:536870912:1%20boot:1639972864:33554432:1%20system:1681915904:1073741824:1%20params:2764046336:67108864:2%20bootfiles:2839543808:754974720:2%20data:3602907136:4131389440:4&dsnapshot=logo::33554432:1%20recovery::33554432:1%20rsv::8388608:1%20tee::8388608:1%20crypt::33554432:1%20misc::33554432:1%20instaboot::536870912:1%20boot::33554432:1%20system::1073741824:1%20cache::536870912:2%20params::67108864:2%20data::-1:4
 ```
 
-将这个网址复制到你的浏览器打开，即可看到格式清晰明了的DTB分区信息和eMMC分区信息
-：
+将这个网址复制到你的浏览器打开，即可看到格式清晰明了的 DTB 分区信息和 eMMC 分区信息：
 
-<img width="300" alt="image" src="https://user-images.githubusercontent.com/24390674/216287642-e1b7be27-4d2c-4ac3-9fcc-15e06aebb97e.png">
-
+<div style="width:100%;margin-top:40px;margin:5px;">
+<img width="800" alt="image" src="https://user-images.githubusercontent.com/24390674/216287642-e1b7be27-4d2c-4ac3-9fcc-15e06aebb97e.png">
 <img width="800" alt="image" src="https://user-images.githubusercontent.com/24390674/216287654-d1929e21-d2b3-4fb6-bcf0-c454c88e21b9.png">
+</div>
 
 #### 12.10.2 分区信息分享
 
 当你需要分享分区信息给其他人时（比如，发布到本仓库以来汇报某一新设备的情况，或者寻求他人的帮助），尽量分享网址本身，而不是截图。如果介意网址太长，可以借用一些免费的短网址工具。
- - 一方面，网页上的分区信息在每次访问时都会动态生成，对于某些分区是否能写入的标注，以及表格的格式等都可能会更新
- - 另一方面，从截图中其他人也不能方便地复制分区参数做计算等
- 
-另外，也不需要额外地将参数整理到表格文件，网页上表格的布局已经特意设计为仅需复制粘贴就可以导入到Excel或者LibreOffice Calc中
+
+- 一方面，网页上的分区信息在每次访问时都会动态生成，对于某些分区是否能写入的标注，以及表格的格式等都可能会更新。
+- 另一方面，从截图中其他人也不能方便地复制分区参数做计算等。
+
+另外，也不需要额外地将参数整理到表格文件，网页上表格的布局已经特意设计为仅需复制粘贴就可以导入到 Excel 或者 LibreOffice Calc 中。
 
 #### 12.10.3 分区信息解读
 
-DTB表是安卓DTB中记录的每个盒子**固件**希望的分区布局，这一布局里一般会以一个大小为自动填充的`data`分区为结尾，所以同固件（也必然包括同型号）的盒子，这里的布局必然是相同的。盒子上实际的分区布局会因为eMMC的容量不同而各有差别，但总是由DTB的分区布局所决定的（即已知DTB分区布局+eMMC准确大小，必然可推知eMMC分区情况。 *上面的DTB分区信息和eMMC分区信息并非来自同一个盒子，你看出来了吗？*）。
+DTB 表是安卓 DTB 中记录的每个盒子**固件**希望的分区布局，这一布局里一般会以一个大小为自动填充的 `data` 分区为结尾，所以同固件（也必然包括同型号）的盒子，这里的布局必然是相同的。盒子上实际的分区布局会因为 eMMC 的容量不同而各有差别，但总是由 DTB 的分区布局所决定的（即已知 DTB 分区布局 +eMMC 准确大小，必然可推知 eMMC 分区情况。 *上面的 DTB 分区信息和 eMMC 分区信息并非来自同一个盒子，你看出来了吗？*）。
 
-eMMC表是盒子上实际的eMMC分区布局。其中每一行表示一块存储区域，这一存储区域既可能是一个分区，也可能是分区间的空隙（因为晶晨的诡异决策，每个分区之间都至少有8M的空隙，计划留作他用，结果到最新的S905X4都没有用上，十分浪费空间）。对应分区的行中，字体为黑色，且偏移和掩码栏均有数值；对应空隙的行中，字体为灰色，偏移和掩码栏没有数值，且分区名为`gap`
+eMMC 表是盒子上实际的 eMMC 分区布局。其中每一行表示一块存储区域，这一存储区域既可能是一个分区，也可能是分区间的空隙（因为晶晨的诡异决策，每个分区之间都至少有 8M 的空隙，计划留作他用，结果到最新的 S905X4 都没有用上，十分浪费空间）。对应分区的行中，字体为黑色，且偏移和掩码栏均有数值；对应空隙的行中，字体为灰色，偏移和掩码栏没有数值，且分区名为 `gap` 。
 
-eMMC表中，每一块存储区域的最后一栏为可写入的情况，绿色且yes表示这一区域可以写入，红色且no表示这一区域绝对不可以写入，黄色且有标注则表示某前提的下可以写入，或者只有部分可以写入。
+eMMC 表中，每一块存储区域的最后一栏为可写入的情况，绿色且 `yes` 表示这一区域可以写入，红色且 `no` 表示这一区域绝对不可以写入，黄色且有标注则表示某前提的下可以写入，或者只有部分可以写入。
 
-以上表为例，`bootloader`分区对应的`0+4M` (`0M~4M`)绝对不可写入，其后的`32M`空隙（`4M~36M`）可以写入，`reserved`分区对应的`36M+64M` (`36M~100M`)绝对不可写入，其后的空隙一直到`env`前的空隙（`100M~836M`）都可以写入，`env`的1M往后（`837M一直到结尾`）在不需要安卓启动logo的情况下都可以写入，则eMMC上所有可写入的范围为：
- - 4M~36M
- - 100M~836M
- - 837M~结尾
+以上表为例，`bootloader` 分区对应的 `0+4M` (`0M~4M`)绝对不可写入，其后的 `32M` 空隙（`4M~36M`）可以写入，`reserved` 分区对应的 `36M+64M` (`36M~100M`)绝对不可写入，其后的空隙一直到 `env` 前的空隙（`100M~836M`）都可以写入，`env` 的1M往后（`837M一直到结尾`）在不需要安卓启动 logo 的情况下都可以写入，则 eMMC 上所有可写入的范围为：
 
- 在需要安卓启动logo的情况下，额外的，`logo`分区对应的852M+32M (852M~884M)不能写入，则eMMC上所有的可写入范围为：
- - 4M~36M
- - 100M~836M
- - 837M~852M
- - 884M~结尾
+- 4M~36M
+- 100M~836M
+- 837M~结尾
 
-#### 12.10.4 用于eMMC安装
+在需要安卓启动 logo 的情况下，额外的，`logo`分区对应的 852M + 32M (`852M~884M`)不能写入，则 eMMC 上所有的可写入范围为：
 
-如果你的设备在使用`armbian-install`且`-a`参数（使用[ampart](https://github.com/7Ji/ampart)调整eMMC分区布局）为`yes`（默认值）的情况下失败，则你的盒子不能使用最优化的布局（即把DTB分区信息调整为只有`data`，再由此生成eMMC分区信息，然后将所有还存在的分区均向前挪动，如此一来，117M向后的空间便均可使用），你需要在 [armbian-install](../armbian-files/common-files/usr/sbin/armbian-install) 中修改对应的分区信息。
+- 4M~36M
+- 100M~836M
+- 837M~852M
+- 884M~结尾
 
-此文件中，声明分区布局的关键参数有三个：`BLANK1`, `BOOT`, `BLANK2`。其中`BLANK1`表示从eMMC开头算起的不能使用的大小；`BOOT`表示在`BLANK1`以后创建的用来存放内核、DTB等的分区的大小，最好不要小于256M，`BLANK2`表示`BOOT`以后不能使用的大小；在此之后的空间会全部用来创建`ROOT`分区，储存整个系统中`/boot`挂载点以外的数据。三者均应为整数，且单位为MiB (1 MiB = 1024 KiB = 1024^2 Byte)
+#### 12.10.4 用于 eMMC 安装
 
-讨论上一段中不需要`logo`分区的情况，我们自然希望将所有能使用的空间全部使用，但是`4M~36M`的区域由于太小，不能用作`BOOT`，所以只能将它算在不能用的`BLANK1`里面。而`100M~836M`的区域，用作`BOOT`绰绰有余，则可以将这736M全部分配给`BOOT`。此后再有`836M~837M`的不能使用区域，便算给`BLANK2`，那么应该使用的参数就应该如下（下文仅以`s905x3`为例，若你的SoC为其他，需要修改其他的对应代码块）：
+如果你的设备在使用 `armbian-install` 且 `-a` 参数（使用 [ampart](https://github.com/7Ji/ampart) 调整 eMMC 分区布局）为 `yes`（默认值）的情况下失败，则你的盒子不能使用最优化的布局（即把 DTB 分区信息调整为只有 `data` ，再由此生成 eMMC 分区信息，然后将所有还存在的分区均向前挪动，如此一来，117M 向后的空间便均可使用），你需要在 [armbian-install](../armbian-files/common-files/usr/sbin/armbian-install) 中修改对应的分区信息。
+
+此文件中，声明分区布局的关键参数有三个：`BLANK1`, `BOOT`, `BLANK2`。其中 `BLANK1` 表示从 eMMC 开头算起的不能使用的大小；`BOOT` 表示在 `BLANK1` 以后创建的用来存放内核、DTB 等的分区的大小，最好不要小于 256M，`BLANK2` 表示 `BOOT` 以后不能使用的大小；在此之后的空间会全部用来创建 `ROOT` 分区，储存整个系统中 `/boot` 挂载点以外的数据。三者均应为整数，且单位为MiB (1 MiB = 1024 KiB = 1024^2 Byte)
+
+讨论上一段中不需要 `logo` 分区的情况，我们自然希望将所有能使用的空间全部使用，但是 `4M~36M` 的区域由于太小，不能用作 `BOOT`，所以只能将它算在不能用的 `BLANK1` 里面。而 `100M~836M` 的区域，用作 `BOOT` 绰绰有余，则可以将这 736M 全部分配给 `BOOT`。此后再有 `836M~837M` 的不能使用区域，便算给 `BLANK2` ，那么应该使用的参数就应该如下（下文仅以 `s905x3` 为例，若你的 SoC 为其他，需要修改其他的对应代码块）：
 
 ```shell
 # Set partition size (Unit: MiB)
@@ -953,4 +966,58 @@ Rockchip 系列的设备，为每个设备添加以 `BOARD` 命名的独立 [u-b
 #### 12.15.4 添加流程控制文件
 
 在 [yml 工作流控制文件](../../.github/workflows/build-armbian.yml) 的 `armbian_board` 中添加对应的 `BOARD` 选项，支持在 github.com 的 `Actions` 中进行使用。
+
+### 12.16 如何解决写入 eMMC 时 I/O 错误的问题
+
+有些设备可以从 USB/SD/TF 正常启动 Armbian 使用，但是写入 eMMC 时会报 I/O 写入错误，例如 [Issues](https://github.com/ophub/amlogic-s9xxx-armbian/issues/989) 中的案例，报错内容如下：
+
+```shell
+[  284.338449] I/O error, dev mmcblk2, sector 0 op 0x1:(WRITE) flags 0x800 phys_seg 1 prio class 2
+[  284.341544] Buffer I/O error on dev mmcblk2, logical block 0, lost async page write
+[  284.446972] I/O error, dev mmcblk2, sector 0 op 0x1:(WRITE) flags 0x800 phys_seg 1 prio class 2
+[  284.450074] Buffer I/O error on dev mmcblk2, logical block 0, lost async page write
+[  284.497746] I/O error, dev mmcblk2, sector 0 op 0x1:(WRITE) flags 0x800 phys_seg 1 prio class 2
+[  284.500871] Buffer I/O error on dev mmcblk2, logical block 0, lost async page write
+```
+
+这种情况下可以调整所使用的 dtb 的工作模式速度和频率，来稳定对存储的读写支持。使用 sdr 模式时，频率是速度的 2 倍，使用 ddr 模式时，频率等于速度。如下：
+
+```shell
+sd-uhs-sdr12
+sd-uhs-sdr25
+sd-uhs-sdr50
+sd-uhs-ddr50
+sd-uhs-sdr104
+
+max-frequency = <208000000>;
+```
+
+以内核源码的 [dts](https://github.com/unifreq/linux-5.15.y/tree/main/arch/arm64/boot/dts/amlogic) 文件中的代码片段举例：
+
+```shell
+/* SD card */
+&sd_emmc_b {
+	status = "okay";
+
+	bus-width = <4>;
+	cap-sd-highspeed;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
+	max-frequency = <100000000>;
+};
+
+/* eMMC */
+&sd_emmc_c {
+	status = "okay";
+
+	bus-width = <8>;
+	cap-mmc-highspeed;
+	max-frequency = <100000000>;
+};
+```
+
+一般情况下，把 `&sd_emmc_c` 的频率由 `max-frequency = <200000000>;` 下调为 `max-frequency = <100000000>;` 即可解决问题。如果不行可继续下调到 `50000000` 进行测试，并通过调整 `&sd_emmc_b` 来对 `USB/SD/TF` 进行设置，也可以使用 `sd-uhs-sdr` 进行限速。你可以通过修改 dts 文件并 [编译](https://github.com/ophub/amlogic-s9xxx-armbian/tree/main/compile-kernel) 得到测试文件，也可以通过 `12.13 节` 中介绍的方法对已有的 dtb 文件进行反编译修改生成测试文件。
+
+除了通过系统软件层来解决，还可以发挥 [钞能力](https://github.com/ophub/amlogic-s9xxx-armbian/issues/998) 和 [动手能力](https://www.right.com.cn/forum/thread-901586-1-1.html) 解决。
 
