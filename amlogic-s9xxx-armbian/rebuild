@@ -73,21 +73,17 @@ firmware_repo="${firmware_repo//tree\/main/trunk}"
 
 # Kernel files download repository
 kernel_repo="https://github.com/ophub/kernel/tree/main/pub"
-# Set stable kernel directory: [ stable ], rk35xx kernel directory: [ rk3588 ]
+# Set stable kernel directory: [ stable ], rk3588 kernel directory: [ rk3588 ]
 kernel_dir=("stable" "rk3588")
 # Set the list of kernels used by default
 stable_kernel=("6.1.10" "5.15.50")
-rk35xx_kernel=("5.10.150")
+rk3588_kernel=("5.10.150")
 # Set to automatically use the latest kernel
 auto_kernel="true"
 
 # Get the list of devices built by default
 # 1.ID  2.MODEL  3.SOC  4.FDTFILE  5.UBOOT_OVERLOAD  6.MAINLINE_UBOOT  7.BOOTLOADER_IMG  8.KERNEL_BRANCH  9.PLATFORM  10.FAMILY  11.BOARD  12.BUILD
 build_armbian=($(cat ${model_conf} | sed -e 's/NA//g' -e 's/NULL//g' -e 's/[ ][ ]*//g' | grep -E "^[^#].*:yes$" | awk -F':' '{print $11}' | sort | uniq | xargs))
-# Set the list of devices that must use the rk35xx kernel
-must_kernel_rk35xx=("rock5b")
-# Set the list of devices that must use the stable/6.x.y kernel
-must_kernel_6xy=("r66s" "r68s" "eaidk-610")
 # Set the list of devices that must use the /boot/extlinux/extlinux.conf file
 must_extlinux=("s905x-t95" "s912-t95z-plus" "s905lb-r3300l")
 
@@ -123,9 +119,9 @@ process_msg() {
 
 get_textoffset() {
     vmlinuz_name="${1}"
-    K510="1"
-    # With TEXT_OFFSET patch is [ 0108 ], without TEXT_OFFSET patch is [ 0000 ]
-    [[ "$(hexdump -n 15 -x "${vmlinuz_name}" 2>/dev/null | head -n 1 | awk '{print $7}')" == "0108" ]] && K510="0"
+    NEED_OVERLOAD="yes"
+    # With TEXT_OFFSET patch is [ 0108 ], without TEXT_OFFSET patch is [ 0000 ] and need to ues [ UBOOT_OVERLOAD ] file.
+    [[ "$(hexdump -n 15 -x "${vmlinuz_name}" 2>/dev/null | head -n 1 | awk '{print $7}')" == "0108" ]] && NEED_OVERLOAD="no"
 }
 
 init_var() {
@@ -272,7 +268,7 @@ query_version() {
         {
             # Select the corresponding kernel directory and list
             if [[ "${k}" == "rk3588" ]]; then
-                down_kernel_list="${rk35xx_kernel[*]}"
+                down_kernel_list="${rk3588_kernel[*]}"
             else
                 down_kernel_list="${stable_kernel[*]}"
             fi
@@ -308,8 +304,8 @@ query_version() {
 
             # Reset the kernel array to the latest kernel version
             if [[ "${k}" == "rk3588" ]]; then
-                unset rk35xx_kernel
-                rk35xx_kernel="${tmp_arr_kernels[*]}"
+                unset rk3588_kernel
+                rk3588_kernel="${tmp_arr_kernels[*]}"
             else
                 unset stable_kernel
                 stable_kernel="${tmp_arr_kernels[*]}"
@@ -320,7 +316,7 @@ query_version() {
     done
 
     echo -e "${INFO} The latest version of the stable_kernel: [ ${stable_kernel[*]} ]"
-    echo -e "${INFO} The latest version of the rk35xx_kernel: [ ${rk35xx_kernel[*]} ]"
+    echo -e "${INFO} The latest version of the rk3588_kernel: [ ${rk3588_kernel[*]} ]"
 }
 
 download_kernel() {
@@ -332,7 +328,7 @@ download_kernel() {
         {
             # Set the kernel download list
             if [[ "${k}" == "rk3588" ]]; then
-                down_kernel_list="${rk35xx_kernel[*]}"
+                down_kernel_list="${rk3588_kernel[*]}"
             else
                 down_kernel_list="${stable_kernel[*]}"
             fi
@@ -609,10 +605,10 @@ refactor_files() {
     # Process Amlogic series boot partition files
     [[ "${PLATFORM}" == "amlogic" ]] && {
         # Add u-boot.ext for Amlogic 5.10 kernel
-        if [[ "${K510}" -eq "1" && -n "${UBOOT_OVERLOAD}" && -f "${UBOOT_OVERLOAD}" ]]; then
+        if [[ "${NEED_OVERLOAD}" == "yes" && -n "${UBOOT_OVERLOAD}" && -f "${UBOOT_OVERLOAD}" ]]; then
             cp -f ${UBOOT_OVERLOAD} u-boot.ext
             chmod +x u-boot.ext
-        elif [[ "${K510}" -eq "1" ]] && [[ -z "${UBOOT_OVERLOAD}" || ! -f "${UBOOT_OVERLOAD}" ]]; then
+        elif [[ "${NEED_OVERLOAD}" == "yes" ]] && [[ -z "${UBOOT_OVERLOAD}" || ! -f "${UBOOT_OVERLOAD}" ]]; then
             error_msg "${board} Board does not support using ${kernel} kernel, missing u-boot."
         fi
 
@@ -699,14 +695,14 @@ refactor_files() {
     echo "VERSION_CODENAME='${release_codename}'" >>${ophub_release_file}
     echo "SOC='${SOC}'" >>${ophub_release_file}
     echo "FDTFILE='${FDTFILE}'" >>${ophub_release_file}
-    echo "UBOOT_OVERLOAD='${UBOOT_OVERLOAD}'" >>${ophub_release_file}
     echo "MAINLINE_UBOOT='/usr/lib/u-boot/${MAINLINE_UBOOT}'" >>${ophub_release_file}
     echo "BOOTLOADER_IMG='/usr/lib/u-boot/${BOOTLOADER_IMG}'" >>${ophub_release_file}
+    echo "UBOOT_OVERLOAD='${UBOOT_OVERLOAD}'" >>${ophub_release_file}
+    echo "NEED_OVERLOAD='${NEED_OVERLOAD}'" >>${ophub_release_file}
     echo "FAMILY='${FAMILY}'" >>${ophub_release_file}
     echo "BOARD='${board}'" >>${ophub_release_file}
     echo "KERNEL_VERSION='${kernel}'" >>${ophub_release_file}
     echo "KERNEL_BRANCH='${KERNEL_BRANCH}'" >>${ophub_release_file}
-    echo "K510='${K510}'" >>${ophub_release_file}
     echo "ROOTFS_TYPE='${ROOTFS_TYPE}'" >>${ophub_release_file}
     echo "BOOT_CONF='${boot_conf_file}'" >>${ophub_release_file}
     echo "DISK_TYPE='usb'" >>${ophub_release_file}
@@ -853,8 +849,8 @@ loop_rebuild() {
             confirm_version
 
             # Determine kernel branch
-            if [[ -n "$(echo "${must_kernel_rk35xx[@]}" | grep -w "${board}")" ]]; then
-                kernel_list="${rk35xx_kernel[*]}"
+            if [[ "${KERNEL_BRANCH}" == "rk3588" ]]; then
+                kernel_list="${rk3588_kernel[*]}"
                 kd="rk3588"
             else
                 kernel_list="${stable_kernel[*]}"
@@ -867,7 +863,7 @@ loop_rebuild() {
                     kernel="${k}"
 
                     # Identify devices that must use the 6.x.y kernel
-                    [[ -n "$(echo "${must_kernel_6xy[@]}" | grep -w "${board}")" && "${kernel:0:1}" -ne "6" ]] && {
+                    [[ "${KERNEL_BRANCH}" == "6.x.y" && "${kernel:0:2}" != "6." ]] && {
                         echo -e "(${j}.${i}) ${TIPS} The ${board} device cannot use ${kd}/${kernel} kernel, skip."
                         let i++
                         continue
@@ -924,9 +920,9 @@ download_depends
 [[ "${auto_kernel}" == "true" ]] && query_version
 download_kernel
 #
-echo -e "${INFO} Armbian board list: [ $(echo ${build_armbian[*]} | tr "\n" " ") ]"
-echo -e "${INFO} Stable kernel list: [ $(echo ${stable_kernel[*]} | tr "\n" " ") ]"
-echo -e "${INFO} Rk35xx Kernel list: [ $(echo ${rk35xx_kernel[*]} | tr "\n" " ") ]"
+echo -e "${INFO} [ ${#build_armbian[*]} ] lists of Armbian board: [ $(echo ${build_armbian[*]} | xargs) ]"
+echo -e "${INFO} [ ${#stable_kernel[*]} ] lists of stable kernel: [ $(echo ${stable_kernel[*]} | xargs) ]"
+echo -e "${INFO} [ ${#rk3588_kernel[*]} ] lists of rk3588 Kernel: [ $(echo ${rk3588_kernel[*]} | xargs) ]"
 echo -e "${INFO} ROOTFS type: [ ${ROOTFS_TYPE} ] \n"
 #
 # Loop to rebuild armbian
