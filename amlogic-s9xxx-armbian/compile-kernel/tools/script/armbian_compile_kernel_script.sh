@@ -340,29 +340,31 @@ get_kernel_source() {
     fi
 }
 
+# https://github.com/armbian/build/blob/master/packages/armbian/builddeb#L120
 headers_install() {
     cd ${kernel_path}/${local_kernel_path}
 
     # Set headers files list
     head_list="$(mktemp)"
     (
-        find . arch/${ARCH} -maxdepth 1 -name Makefile\*
-        find include scripts -type f -o -type l
-        find arch/${ARCH} -name Kbuild.platforms -o -name Platform
+        find . -name Makefile\* -o -name Kconfig\* -o -name \*.pl
+        find arch/*/include include scripts -type f -o -type l
+        find security/*/include -type f
+        find arch/${ARCH} -name module.lds -o -name Kbuild.platforms -o -name Platform
         find $(find arch/${ARCH} -name include -o -name scripts -type d) -type f
     ) >${head_list}
 
     # Set object files list
     obj_list="$(mktemp)"
     {
-        [[ -n "$(grep "^CONFIG_OBJTOOL=y" include/config/auto.conf 2>/dev/null)" ]] && echo "tools/objtool/objtool"
+        [[ -n "$(grep "^CONFIG_OBJTOOL=y" include/config/auto.conf 2>/dev/null)" ]] && find tools/objtool -type f -executable
         find arch/${ARCH}/include Module.symvers include scripts -type f
         [[ -n "$(grep "^CONFIG_GCC_PLUGINS=y" include/config/auto.conf 2>/dev/null)" ]] && find scripts/gcc-plugins -name \*.so
     } >${obj_list}
 
     # Install related files to the specified directory
-    tar --exclude '*.orig' -c -f - -C ${kernel_path}/${local_kernel_path} -T ${head_list} | tar -xf - -C ${out_kernel}/header
-    tar --exclude '*.orig' -c -f - -T ${obj_list} | tar -xf - -C ${out_kernel}/header
+    tar -c -f - -C ${kernel_path}/${local_kernel_path} -T ${head_list} | tar -xf - -C ${out_kernel}/header
+    tar -c -f - -T ${obj_list} | tar -xf - -C ${out_kernel}/header
 
     # copy .config manually to be where it's expected to be
     cp -f .config ${out_kernel}/header/.config

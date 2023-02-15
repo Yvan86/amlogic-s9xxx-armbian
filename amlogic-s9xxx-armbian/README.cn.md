@@ -25,7 +25,7 @@
 | s905lb/3b | [M302A/M304A](https://github.com/ophub/amlogic-s9xxx-armbian/pull/615), [E900V22E](https://github.com/ophub/amlogic-s9xxx-armbian/issues/939), [BesTV-R3300L(s905l-b)](https://github.com/ophub/amlogic-s9xxx-armbian/pull/993) | 全部 | aml_s905l2.img<br />aml_s905lb-r3300l.img |
 | s905l2/3 | [MGV2000](https://github.com/ophub/amlogic-s9xxx-armbian/issues/648), [MGV3000](https://github.com/ophub/amlogic-s9xxx-armbian/issues/921), [Wojia-TV-IPBS9505](https://github.com/ophub/amlogic-s9xxx-armbian/issues/648), [CM311-1(s905l3)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/763), [HG680-LC(s905l3)](https://github.com/ophub/amlogic-s9xxx-armbian/issues/978) | 全部 | aml_s905l2.img |
 | rk3588 | [Radxa-Rock5B](https://wiki.radxa.com/Rock5/5b), [HinLink-H88K](http://www.hinlink.com/index.php?id=138) | [rk3588](https://github.com/ophub/kernel/tree/main/pub/rk3588) | rockchip_rock5b.img<br />rockchip_h88k.img |
-| rk3568 | [FastRhino-R66S](https://r68s.cn/), [FastRhino-R68S](https://github.com/ophub/amlogic-s9xxx-armbian/issues/774), [HinLink-H66K](http://www.hinlink.com/index.php?id=137), [HinLink-H68K](http://www.hinlink.com/index.php?id=119) | [6.x.y](https://github.com/ophub/kernel/tree/main/pub/stable) | rockchip_boxname.img |
+| rk3568 | [FastRhino-R66S](https://github.com/ophub/amlogic-s9xxx-armbian/issues/1061), [FastRhino-R68S](https://github.com/ophub/amlogic-s9xxx-armbian/issues/774), [HinLink-H66K](http://www.hinlink.com/index.php?id=137), [HinLink-H68K](http://www.hinlink.com/index.php?id=119) | [6.x.y](https://github.com/ophub/kernel/tree/main/pub/stable) | rockchip_boxname.img |
 | rk3399 | [EAIDK-610](https://github.com/ophub/amlogic-s9xxx-armbian/pull/991) | [6.x.y](https://github.com/ophub/kernel/tree/main/pub/stable) | rockchip_eaidk-610.img |
 | rk3328 | [beikeyun](https://github.com/ophub/amlogic-s9xxx-armbian/issues/852), [l1pro](https://github.com/ophub/amlogic-s9xxx-armbian/issues/1007) | 全部 | rockchip_beikeyun.img <br />rockchip_l1pro.img |
 
@@ -223,7 +223,7 @@ sudo apt-get install -y $(cat compile-kernel/tools/script/ubuntu2204-build-armbi
 | -k   | Kernel     | 指定 [kernel](https://github.com/ophub/kernel/tree/main/pub/stable) 名称，如 `-k 5.10.125` . 多个内核使用 `_` 进行连接，如 `-k 5.10.125_5.15.50` |
 | -a   | AutoKernel | 设置是否自动采用同系列最新版本内核。当为 `true` 时，将自动在内核库中查找在 `-k` 中指定的内核如 5.10.125 的同系列是否有更新的版本，如有 5.10.125 之后的最新版本时，将自动更换为最新版。设置为 `false` 时将编译指定版本内核。默认值：`true` |
 | -v   | Version    | 指定内核 [版本分支](https://github.com/ophub/kernel/tree/main/pub) 名称，如 `-v stable_rk3588` 。指定的名称须与分支目录名称相同。默认使用 `stable_rk3588` 分支版本。 |
-| -r   | KernelRepository    | 指定内核仓库地址，如 `-r https://github.com/ophub/kernel/tree/main/pub` 。默认使用 [ophub/kernel](https://github.com/ophub/amlogic-s9xxx-armbian/blob/main/rebuild#L75) 的内核仓库。 |
+| -r   | KernelRepository    | 指定内核仓库地址，如 `-r https://github.com/ophub/kernel/tree/main/pub` 。默认使用 [ophub/kernel](https://github.com/ophub/amlogic-s9xxx-armbian/blob/main/rebuild#L76) 的内核仓库。 |
 | -s   | Size       | 对固件的 ROOTFS 分区大小进行设置，默认大小为 2560MiB, 固件大小必须大于 2048MiB. 例如： `-s 2560` |
 | -t   | RootfsType | 对固件的 ROOTFS 分区的文件系统类型进行设置，默认为 `ext4` 类型，可选项为 `ext4` 或 `btrfs` 类型。例如： `-t btrfs` |
 | -n   | CustomName | 设置固件名称中的签名部分。默认值为空。可根据需要添加签名如 `_server`，`_gnome_desktop` 或 `_ophub` 等，设置自定义签名时请勿包含空格。 |
