@@ -1,21 +1,21 @@
-echo "Start running sunxi mainline u-boot"
-#setenv loadaddr "0x42000000"
-#setenv kernel_addr_r "0x40080000"
-#setenv ramdisk_addr_r "0x4FF00000"
-#setenv fdt_addr_r "0x4FA00000"
-setenv dev_nums "0 1 2 3"
+echo "start mainline u-boot"
+setenv loadaddr "0x44000000"
+setenv l_mmc "0 1 2 3"
 for devtype in "usb mmc" ; do
-	for devnum in ${dev_nums} ; do
+	if test "${devtype}" = "mmc"; then
+		setenv l_mmc "0"
+	fi 
+	for devnum in ${l_mmc} ; do
 		if test -e ${devtype} ${devnum} uEnv.txt; then
 			load ${devtype} ${devnum} ${loadaddr} uEnv.txt
 			env import -t ${loadaddr} ${filesize}
 			setenv bootargs ${APPEND}
-			if printenv ethaddr; then
-				setenv bootargs ${bootargs} mac=${ethaddr}
+			if printenv mac; then
+				setenv bootargs ${bootargs} mac=${mac}
 			elif printenv eth_mac; then
 				setenv bootargs ${bootargs} mac=${eth_mac}
-			elif printenv mac; then
-				setenv bootargs ${bootargs} mac=${mac}
+			elif printenv ethaddr; then
+				setenv bootargs ${bootargs} mac=${ethaddr}
 			fi
 			if load ${devtype} ${devnum} ${kernel_addr_r} ${LINUX}; then
 				if load ${devtype} ${devnum} ${ramdisk_addr_r} ${INITRD}; then
@@ -28,5 +28,3 @@ for devtype in "usb mmc" ; do
 		fi
 	done
 done
-# Recompile with:
-# mkimage -C none -A arm -T script -d boot.cmd boot.scr
