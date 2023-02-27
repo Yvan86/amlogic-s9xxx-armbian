@@ -390,11 +390,12 @@ confirm_version() {
     [[ -n "${board_conf}" ]] || error_msg "[ ${board} ] config is missing!"
 
     # 1.ID  2.MODEL  3.SOC  4.FDTFILE  5.UBOOT_OVERLOAD  6.MAINLINE_UBOOT  7.BOOTLOADER_IMG  8.KERNEL_BRANCH  9.PLATFORM  10.FAMILY  11.BOOT_CONF 12.BOARD  13.BUILD
-    # Column 5, called <UBOOT_OVERLOAD> in Amlogic and <TRUST_IMG> in Rockchip and Allwinner
+    # Column 5, called <UBOOT_OVERLOAD> in Amlogic, <TRUST_IMG> in Rockchip, and <SPL_LOAD_ADDRESS> in Allwinner
     SOC="$(echo ${board_conf} | awk -F':' '{print $3}')"
     FDTFILE="$(echo ${board_conf} | awk -F':' '{print $4}')"
     UBOOT_OVERLOAD="$(echo ${board_conf} | awk -F':' '{print $5}')"
     TRUST_IMG="${UBOOT_OVERLOAD}"
+    SPL_LOAD_ADDRESS="${UBOOT_OVERLOAD}"
     MAINLINE_UBOOT="$(echo ${board_conf} | awk -F':' '{print $6}')"
     BOOTLOADER_IMG="$(echo ${board_conf} | awk -F':' '{print $7}')"
     KERNEL_BRANCH="$(echo ${board_conf} | awk -F':' '{print $8}')"
@@ -429,8 +430,8 @@ confirm_version() {
         fi
     }
 
-    # Define platform variables for [ Rockchip ] boxes
-    [[ "${PLATFORM}" == "rockchip" ]] && {
+    # Define platform variables for [ Rockchip / Allwinner ] boxes
+    [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && {
         # Set up the welcome board
         bd_name="${board}"
         # Set Armbian image file parameters
@@ -442,33 +443,12 @@ confirm_version() {
         bootloader_dir="${uboot_path}/${PLATFORM}/${board}"
         # Set the type of file system
         if [[ "${ROOTFS_TYPE}" == "btrfs" ]]; then
-            uenv_rootflags="compress=zstd:6"
-            uenv_rootdev="UUID=${ROOTFS_UUID}"
+            armbianenv_rootflags="compress=zstd:6"
+            armbianenv_rootdev="UUID=${ROOTFS_UUID}"
             fstab_string="discard,defaults,noatime,compress=zstd:6"
         else
-            uenv_rootflags="rw,errors=remount-ro"
-            uenv_rootdev="UUID=${ROOTFS_UUID}"
-            fstab_string="discard,defaults,noatime,commit=600,errors=remount-ro"
-        fi
-    }
-
-    # Define platform variables for [ Allwinner ] boxes
-    [[ "${PLATFORM}" == "allwinner" ]] && {
-        # Set up the welcome board
-        bd_name="${board}"
-        # Set Armbian image file parameters
-        partition_table_type="msdos"
-        bootfs_type="fat32"
-        # Set directory name
-        platform_bootfs="${platform_files}/${PLATFORM}/bootfs/${board}"
-        platform_rootfs="${platform_files}/${PLATFORM}/rootfs"
-        bootloader_dir="${uboot_path}/${PLATFORM}/${board}"
-        # Set the type of file system
-        if [[ "${ROOTFS_TYPE}" == "btrfs" ]]; then
-            uenv_rootdev="UUID=${ROOTFS_UUID} rootflags=compress=zstd:6 rootfstype=btrfs"
-            fstab_string="discard,defaults,noatime,compress=zstd:6"
-        else
-            uenv_rootdev="UUID=${ROOTFS_UUID} rootflags=data=writeback rw rootfstype=ext4"
+            armbianenv_rootflags="rw,errors=remount-ro"
+            armbianenv_rootdev="UUID=${ROOTFS_UUID}"
             fstab_string="discard,defaults,noatime,errors=remount-ro"
         fi
     }
@@ -533,8 +513,10 @@ make_image() {
     [[ -n "${loop_new}" ]] || error_msg "losetup ${build_image_file} failed."
 
     # Format bootfs partition
-    [[ "${PLATFORM}" == "amlogic" || "${PLATFORM}" == "allwinner" ]] && mkfs.vfat -F 32 -n "BOOT" ${loop_new}p1 >/dev/null 2>&1
-    [[ "${PLATFORM}" == "rockchip" ]] && mkfs.ext4 -F -q -U ${BOOT_UUID} -L "BOOT" -b 4k -m 0 ${loop_new}p1 >/dev/null 2>&1
+    [[ "${PLATFORM}" == "amlogic" ]] && mkfs.vfat -F 32 -n "BOOT" ${loop_new}p1 >/dev/null 2>&1
+    [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && {
+        mkfs.ext4 -F -q -U ${BOOT_UUID} -L "BOOT" -b 4k -m 0 ${loop_new}p1 >/dev/null 2>&1
+    }
 
     # Format rootfs partition
     if [[ "${ROOTFS_TYPE}" == "btrfs" ]]; then
@@ -603,7 +585,7 @@ copy_files() {
     mkdir -p ${tag_bootfs} ${tag_rootfs}
 
     # Mount bootfs
-    if [[ "${PLATFORM}" == "amlogic" || "${PLATFORM}" == "allwinner" ]]; then
+    if [[ "${PLATFORM}" == "amlogic" ]]; then
         mount -t vfat -o discard ${loop_new}p1 ${tag_bootfs}
     else
         mount -t ext4 -o discard ${loop_new}p1 ${tag_bootfs}
@@ -705,24 +687,14 @@ refactor_files() {
         [[ "${BOOT_CONF}" == "extlinux.conf" ]] && mv -f ${boot_extlinux_file} ${rename_extlinux_file}
     }
 
-    # Process Rockchip series boot partition files
-    [[ "${PLATFORM}" == "rockchip" ]] && {
-        # Edit the armbianEnv.txt
+    # Process Rockchip/Allwinner series boot partition files
+    [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && {
         boot_conf_file="armbianEnv.txt"
         [[ -f "${boot_conf_file}" ]] || error_msg "The [ ${boot_conf_file} ] file does not exist."
         sed -i "s|fdtfile.*|fdtfile=rockchip/${FDTFILE}|g" ${boot_conf_file}
-        sed -i "s|rootdev=.*|rootdev=${uenv_rootdev}|g" ${boot_conf_file}
         sed -i "s|rootfstype=.*|rootfstype=${ROOTFS_TYPE}|g" ${boot_conf_file}
-        sed -i "s|rootflags.*|rootflags=${uenv_rootflags}|g" ${boot_conf_file}
-    }
-
-    # Process Allwinner series boot partition files
-    [[ "${PLATFORM}" == "allwinner" ]] && {
-        # Edit the uEnv.txt
-        boot_conf_file="uEnv.txt"
-        [[ -f "${boot_conf_file}" ]] || error_msg "The [ ${boot_conf_file} ] file does not exist."
-        sed -i "s|LABEL=ROOTFS|${uenv_rootdev}|g" ${boot_conf_file}
-        sed -i "s|meson.*.dtb|${FDTFILE}|g" ${boot_conf_file}
+        sed -i "s|rootdev=.*|rootdev=${armbianenv_rootdev}|g" ${boot_conf_file}
+        sed -i "s|rootflags.*|rootflags=${armbianenv_rootflags}|g" ${boot_conf_file}
     }
 
     # Processing partition files: rootfs
@@ -791,8 +763,10 @@ refactor_files() {
     echo "BOOTLOADER_IMG='/usr/lib/u-boot/${BOOTLOADER_IMG}'" >>${ophub_release_file}
     if [[ "${PLATFORM}" == "amlogic" ]]; then
         echo "UBOOT_OVERLOAD='${UBOOT_OVERLOAD}'" >>${ophub_release_file}
-    else
+    elif [[ "${PLATFORM}" == "rockchip" ]]; then
         echo "TRUST_IMG='${TRUST_IMG}'" >>${ophub_release_file}
+    elif [[ "${PLATFORM}" == "allwinner" ]]; then
+        echo "SPL_LOAD_ADDRESS='${SPL_LOAD_ADDRESS}'" >>${ophub_release_file}
     fi
 
     # Get random macaddr
@@ -806,8 +780,10 @@ refactor_files() {
 
     # Edit the etc/fstab
     [[ -f "etc/fstab" ]] || error_msg "The etc/fstab File does not exist."
+    [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && {
+        sed -i "s|LABEL=BOOT.*|UUID=${BOOT_UUID}  /boot  ext4  discard,defaults  0 2|g" etc/fstab
+    }
     sed -i "s|LABEL=ROOTFS.*|UUID=${ROOTFS_UUID}  /      ${ROOTFS_TYPE}  ${fstab_string}  0 1|g" etc/fstab
-    [[ "${PLATFORM}" == "rockchip" ]] && sed -i "s|LABEL=BOOT.*|UUID=${BOOT_UUID}  /boot  ext4  discard,defaults  0 2|g" etc/fstab
 
     # Update release information
     [[ -f "${armbian_release_file}" ]] && {
