@@ -1,10 +1,8 @@
-verbosity=7
-overlay_prefix=allwinner
+verbosity=1
+overlay_prefix=sun50i-h6
 rootdev=/dev/mmcblk0p2
 rootfstype=ext4
 rootflags=rw,errors=remount-ro
 docker_optimizations=on
-extraargs=usbcore.autosuspend=-1
-extraboardargs=
 fdtfile=allwinner/sun50i-h6-vplus-cloud.dtb
-consoleargs=console=ttyS0,115200n8
+console=serial

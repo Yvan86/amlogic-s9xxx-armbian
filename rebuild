@@ -435,7 +435,8 @@ confirm_version() {
         # Set up the welcome board
         bd_name="${board}"
         # Set Armbian image file parameters
-        partition_table_type="gpt"
+        [[ "${PLATFORM}" == "rockchip" ]] && partition_table_type="gpt"
+        [[ "${PLATFORM}" == "allwinner" ]] && partition_table_type="msdos"
         bootfs_type="ext4"
         # Set directory name
         platform_bootfs="${platform_files}/${PLATFORM}/bootfs/${board}"
@@ -449,7 +450,7 @@ confirm_version() {
         else
             armbianenv_rootflags="rw,errors=remount-ro"
             armbianenv_rootdev="UUID=${ROOTFS_UUID}"
-            fstab_string="discard,defaults,noatime,errors=remount-ro"
+            fstab_string="discard,defaults,noatime,commit=600,errors=remount-ro"
         fi
     }
 }
@@ -631,15 +632,15 @@ replace_kernel() {
 
     # 01. For /boot five files
     tar -xzf ${kernel_boot} -C ${tag_bootfs}
-    [[ "${PLATFORM}" == "amlogic" || "${PLATFORM}" == "allwinner" ]] && (cd ${tag_bootfs} && cp -f uInitrd-${kernel_name} uInitrd && cp -f vmlinuz-${kernel_name} zImage)
-    [[ "${PLATFORM}" == "rockchip" ]] && (cd ${tag_bootfs} && ln -sf uInitrd-${kernel_name} uInitrd && ln -sf vmlinuz-${kernel_name} Image)
+    [[ "${PLATFORM}" == "amlogic" ]] && (cd ${tag_bootfs} && cp -f uInitrd-${kernel_name} uInitrd && cp -f vmlinuz-${kernel_name} zImage)
+    [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && (cd ${tag_bootfs} && ln -sf uInitrd-${kernel_name} uInitrd && ln -sf vmlinuz-${kernel_name} Image)
     [[ "$(ls ${tag_bootfs}/*${kernel_name} -l 2>/dev/null | grep "^-" | wc -l)" -ge "2" ]] || error_msg "The /boot files is missing."
     [[ "${PLATFORM}" == "amlogic" ]] && get_textoffset "${tag_bootfs}/zImage"
 
     # 02. For /boot/dtb/${PLATFORM}/*
     [[ -d "${tag_bootfs}/dtb/${PLATFORM}" ]] || mkdir -p ${tag_bootfs}/dtb/${PLATFORM}
     tar -xzf ${kernel_dtb} -C ${tag_bootfs}/dtb/${PLATFORM}
-    [[ "${PLATFORM}" == "rockchip" ]] && ln -sf dtb ${tag_bootfs}/dtb-${kernel_name}
+    [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && ln -sf dtb ${tag_bootfs}/dtb-${kernel_name}
     [[ "$(ls ${tag_bootfs}/dtb/${PLATFORM} -l 2>/dev/null | grep "^-" | wc -l)" -ge "2" ]] || error_msg "/boot/dtb/${PLATFORM} files is missing."
 
     # 03. For /usr/src/linux-headers-${kernel_name}
@@ -687,8 +688,9 @@ refactor_files() {
         [[ "${BOOT_CONF}" == "extlinux.conf" ]] && mv -f ${boot_extlinux_file} ${rename_extlinux_file}
     }
 
-    # Process Rockchip/Allwinner series boot partition files
+    # Process [ Rockchip / Allwinner ] series boot partition files
     [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && {
+        # Edit the armbianEnv.txt
         boot_conf_file="armbianEnv.txt"
         [[ -f "${boot_conf_file}" ]] || error_msg "The [ ${boot_conf_file} ] file does not exist."
         sed -i "s|fdtfile.*|fdtfile=rockchip/${FDTFILE}|g" ${boot_conf_file}
@@ -780,10 +782,10 @@ refactor_files() {
 
     # Edit the etc/fstab
     [[ -f "etc/fstab" ]] || error_msg "The etc/fstab File does not exist."
+    sed -i "s|LABEL=ROOTFS.*|UUID=${ROOTFS_UUID}  /      ${ROOTFS_TYPE}  ${fstab_string}  0 1|g" etc/fstab
     [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]] && {
         sed -i "s|LABEL=BOOT.*|UUID=${BOOT_UUID}  /boot  ext4  discard,defaults  0 2|g" etc/fstab
     }
-    sed -i "s|LABEL=ROOTFS.*|UUID=${ROOTFS_UUID}  /      ${ROOTFS_TYPE}  ${fstab_string}  0 1|g" etc/fstab
 
     # Update release information
     [[ -f "${armbian_release_file}" ]] && {
@@ -828,7 +830,7 @@ refactor_files() {
     mv -f etc/udev/rules.d/hdmi.rules etc/udev/rules.d/hdmi.rules.bak 2>/dev/null
 
     # Explicitly disable resizing for Amlogic device [ /usr/lib/armbian/armbian-resize-filesystem ], use armbian-tf settings
-    [[ "${PLATFORM}" == "amlogic" || "${PLATFORM}" == "allwinner" ]] && echo "no" >root/.no_rootfs_resize
+    [[ "${PLATFORM}" == "amlogic" ]] && echo "no" >root/.no_rootfs_resize
 
     # Reduce network latency [ A start job is running for raise network interfaces (5 mins 1 sec) ]
     network_service="usr/lib/systemd/system/networking.service"
