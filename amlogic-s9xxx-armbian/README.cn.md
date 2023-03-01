@@ -38,9 +38,9 @@
 
 - ### 安装 Armbian 到 EMMC
 
-1. `Rockchip` 平台的安装方法请查看说明文档中的 [8.2章节](build-armbian/documents/README.cn.md)。
+1. `Rockchip` 和 `Allwinner` 平台的安装方法请查看说明文档中的 [第 8 章节](build-armbian/documents/README.cn.md)。
 
-2. `Amlogic` 和 `Allwinner` 平台，登录 Armbian 系统 (默认用户: root, 默认密码: 1234) → 输入命令：
+2. `Amlogic` 平台，登录 Armbian 系统 (默认用户: root, 默认密码: 1234) → 输入命令：
 
 ```yaml
 armbian-install
@@ -113,7 +113,7 @@ armbian-swap 1
 登录 Armbian 系统 → 输入命令：
 
 ```yaml
-armbian-led
+armbian-openvfd
 ```
 
 根据 [LED 屏显示控制说明](build-armbian/documents/led_screen_display_control.md) 进行调试。

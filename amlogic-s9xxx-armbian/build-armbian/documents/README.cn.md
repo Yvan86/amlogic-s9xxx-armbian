@@ -74,7 +74,7 @@ Github Actions 是 Microsoft 推出的一项服务，它提供了性能配置非
     - [12.14 如何修改 cmdline 设置](#1214-如何修改-cmdline-设置)
     - [12.15 如何添加新的支持设备](#1215-如何添加新的支持设备)
       - [12.15.1 添加设备配置文件](#12151-添加设备配置文件)
-      - [12.15.2 添加 boot 文件](#12152-添加-boot-文件)
+      - [12.15.2 添加系统文件](#12152-添加系统文件)
       - [12.15.3 添加 u-boot 文件](#12153-添加-u-boot-文件)
       - [12.15.4 添加流程控制文件](#12154-添加流程控制文件)
     - [12.16 如何解决写入 eMMC 时 I/O 错误的问题](#1216-如何解决写入-emmc-时-io-错误的问题)
@@ -188,7 +188,7 @@ schedule:
 
 ## 8. 安装 Armbian 到 EMMC
 
-Amlogic 和 Rockchip 的安装方法不同。不同的设备具有不同的存储，有的设备使用外置 microSD 卡，有的带有 eMMC，有的支持使用 NVMe 等多种存储介质，根据设备不同，分别介绍其安装方法。首先在 [Releases](https://github.com/ophub/amlogic-s9xxx-armbian/releases) 里下载自己设备的 Armbian 系统，解压缩成 .img 格式备用。根据自己的设备，使用下面小结中不同的安装方法。
+Amlogic, Rockchip 和 Allwinner 的安装方法不同。不同的设备具有不同的存储，有的设备使用外置 microSD 卡，有的带有 eMMC，有的支持使用 NVMe 等多种存储介质，根据设备不同，分别介绍其安装方法。首先在 [Releases](https://github.com/ophub/amlogic-s9xxx-armbian/releases) 里下载自己设备的 Armbian 系统，解压缩成 .img 格式备用。根据自己的设备，使用下面小结中不同的安装方法。
 
 当安装完成后，将 Armbian 设备接入`路由器`，设备开机`2分钟`后，到路由器里查看设备名称为 Armbian 的 `IP`，使用 `SSH` 工具连接进行管理设置。默认用户名为 `root`，默认密码为 `1234`，默认端口为 `22`
 
@@ -310,10 +310,10 @@ dd if=armbian.img  of=/dev/nvme0n1  bs=1M status=progress
 
 ### 8.3 Allwinner 系列安装方法
 
-登录 Armbian 系统 (默认用户: root, 默认密码: 1234) → 输入命令：
+将 Armbian 系统使用 Rufus 或者 balenaEtcher 等工具刷入 USB/TF/SD 中使用，或者将 Armbian 系统从 USB/TF/SD 卡使用 dd 命令写入 eMMC 中使用，命令中的 `/dev/mmcblk0` 以自己设备中存储为准，使用 `lsblk` 命令查看。
 
-```yaml
-armbian-install
+```Shell
+dd if=armbian.img  of=/dev/mmcblk0  bs=1M  status=progress
 ```
 
 ## 9. 编译 Armbian 内核
@@ -953,7 +953,7 @@ dtc -I dts -O dtb -o xxx.dtb xxx.dts
 
 ### 12.15 如何添加新的支持设备
 
-为一个设备构建 Armbian 系统，需要用到设备配置文件、boot 文件、u-boot 文件、流程控制文件共 4 部分，具体添加方法介绍如下：
+为一个设备构建 Armbian 系统，需要用到 `设备配置文件`、`系统文件`、`u-boot 文件`、`流程控制文件` 共 4 部分，具体添加方法介绍如下：
 
 #### 12.15.1 添加设备配置文件
 
@@ -961,17 +961,21 @@ dtc -I dts -O dtb -o xxx.dtb xxx.dts
 
 默认值是 `no` 的没有打包，这些设备使用时需要下载相同 `FAMILY` 的 Armbian 系统，在写入 `USB` 后，可以在电脑上打开 `USB 中的 boot 分区`，修改 `/boot/uEnv.txt` 文件中 `FDT 的 dtb 名称`，适配列表中的其他设备。
 
-#### 12.15.2 添加 boot 文件
+#### 12.15.2 添加系统文件
 
-`Amlogic` 系列的设备，共用 [/boot](../armbian-files/platform-files/amlogic/bootfs) 启动文件。
+通用文件放在：`build-armbian/armbian-files/common-files` 目录下，各平台通用。
 
-`Rockchip` 和 `Allwinner` 系列的设备，为每个设备添加以 `BOARD` 命名的独立 [/boot](../armbian-files/platform-files/rockchip/bootfs) 启动文件目录，对应的文件放在此目录中。
+平台文件分别放在 `build-armbian/armbian-files/platform-files/<platform>` 目录下，[Amlogic](../armbian-files/platform-files/amlogic)，[Rockchip](../armbian-files/platform-files/rockchip) 和 [Allwinner](../armbian-files/platform-files/allwinner) 分别共用各自平台的文件，其中 `bootfs` 目录下是 /boot 分区的文件，`rootfs` 目录下的是 Armbian 系统文件。
+
+如果个别设备有特殊差异化设置需求，在 `build-armbian/armbian-files/different-files` 目录下添加以 `BOARD` 命名的独立目录，根据需要建立 `bootfs` 目录添加系统 `/boot` 分区下的相关文件，建立 `rootfs` 目录添加系统文件，各文件夹命名以 `Armbian` 系统中的实际路径为准。
 
 #### 12.15.3 添加 u-boot 文件
 
 `Amlogic` 系列的设备，共用 [bootloader](../u-boot/amlogic/bootloader/) 文件和 [u-boot](../u-boot/amlogic/overload) 文件，如果有新增的文件，分别放入对应的目录。其中的 `bootloader` 文件在系统构建时会自动添加至 Armbian 系统的 `/usr/lib/u-boot` 目录，`u-boot` 文件会自动添加至 `/boot` 目录。
 
-`Rockchip` 和 `Allwinner` 系列的设备，为每个设备添加以 `BOARD` 命名的独立 [u-boot](../u-boot/rockchip) 文件目录，对应的系列文件放在此目录中，构建 Armbian 时将直接写入对应的系统镜像文件中。
+`Rockchip` 和 `Allwinner` 系列的设备，为每个设备添加以 `BOARD` 命名的独立 [u-boot](../u-boot) 文件目录，对应的系列文件放在此目录中。
+
+构建 Armbian 镜像时，这些 u-boot 文件将根据 [/etc/model_database.conf](../armbian-files/common-files/etc/model_database.conf) 中的配置，由 rebuild 脚本写入对应的 Armbian 镜像文件中。
 
 #### 12.15.4 添加流程控制文件
 
