@@ -540,7 +540,7 @@ make_image() {
             #echo -e "${INFO} 01. For [ ${board} ] write bootloader: ${MAINLINE_UBOOT}"
         elif [[ -n "${BOOTLOADER_IMG}" && -f "${bootloader_path}/${BOOTLOADER_IMG}" ]]; then
             dd if=/dev/zero of="${loop_new}" bs=1k count=1023 seek=1 status=noxfer 2>/dev/null
-            dd if="${bootloader_path}/${BOOTLOADER_IMG}" of="${loop_new}" bs=1024 seek=8 status=noxfer 2>/dev/null
+            dd if="${bootloader_path}/${BOOTLOADER_IMG}" of="${loop_new}" conv=fsync,notrunc bs=8k seek=1 2>/dev/null
             #echo -e "${INFO} 02. For [ ${board} ] write bootloader: ${BOOTLOADER_IMG}"
         fi
     }
@@ -586,7 +586,7 @@ copy_files() {
     # Copy the different files
     different_bootfs="${different_files}/${board}/bootfs"
     different_rootfs="${different_files}/${board}/rootfs"
-    [[ -d "${different_bootfs}" ]] && cp -rf ${different_bootfs}/* ${tag_bootfs}
+    [[ -d "${different_bootfs}" ]] && rm -rf ${tag_bootfs}/* && cp -rf ${different_bootfs}/* ${tag_bootfs}
     [[ -d "${different_rootfs}" ]] && cp -rf ${different_rootfs}/* ${tag_rootfs}
 
     # Copy the bootloader files
@@ -612,8 +612,9 @@ replace_kernel() {
 
     # 01. For /boot five files
     tar -xzf ${kernel_boot} -C ${tag_bootfs}
-    [[ "${PLATFORM}" == "amlogic" || "${PLATFORM}" == "allwinner" ]] && (cd ${tag_bootfs} && cp -f uInitrd-${kernel_name} uInitrd && cp -f vmlinuz-${kernel_name} zImage)
+    [[ "${PLATFORM}" == "amlogic" ]] && (cd ${tag_bootfs} && cp -f uInitrd-${kernel_name} uInitrd && cp -f vmlinuz-${kernel_name} zImage)
     [[ "${PLATFORM}" == "rockchip" ]] && (cd ${tag_bootfs} && ln -sf uInitrd-${kernel_name} uInitrd && ln -sf vmlinuz-${kernel_name} Image)
+    [[ "${PLATFORM}" == "allwinner" ]] && (cd ${tag_bootfs} && cp -f uInitrd-${kernel_name} uInitrd && cp -f vmlinuz-${kernel_name} Image)
     [[ "$(ls ${tag_bootfs}/*${kernel_name} -l 2>/dev/null | grep "^-" | wc -l)" -ge "2" ]] || error_msg "The /boot files is missing."
     [[ "${PLATFORM}" == "amlogic" ]] && get_textoffset "${tag_bootfs}/zImage"
 
@@ -670,6 +671,7 @@ refactor_bootfs() {
     [[ -f "${uenv_conf_file}" ]] && {
         sed -i "s|LABEL=ROOTFS|${uenv_rootdev}|g" ${uenv_conf_file}
         sed -i "s|meson.*.dtb|${FDTFILE}|g" ${uenv_conf_file}
+        sed -i "s|sun50i.*.dtb|${FDTFILE}|g" ${uenv_conf_file}
     }
 
     # Add an alternate file (/boot/extlinux/extlinux.conf)
@@ -686,15 +688,15 @@ refactor_bootfs() {
     # Edit the armbianEnv.txt
     armbianenv_conf_file="armbianEnv.txt"
     [[ -f "${armbianenv_conf_file}" ]] && {
-        sed -i "s|fdtfile.*|fdtfile=rockchip/${FDTFILE}|g" ${armbianenv_conf_file}
-        sed -i "s|rootfstype=.*|rootfstype=${rootfs_type}|g" ${armbianenv_conf_file}
-        sed -i "s|rootdev=.*|rootdev=${armbianenv_rootdev}|g" ${armbianenv_conf_file}
-        sed -i "s|rootflags.*|rootflags=${armbianenv_rootflags}|g" ${armbianenv_conf_file}
-        sed -i "s|overlay_prefix.*|overlay_prefix=${FAMILY}|g" ${armbianenv_conf_file}
+        sed -i "s|^fdtfile=.*|fdtfile=${PLATFORM}/${FDTFILE}|g" ${armbianenv_conf_file}
+        sed -i "s|^rootfstype=.*|rootfstype=${rootfs_type}|g" ${armbianenv_conf_file}
+        sed -i "s|^rootdev=.*|rootdev=${armbianenv_rootdev}|g" ${armbianenv_conf_file}
+        sed -i "s|^rootflags.*|rootflags=${armbianenv_rootflags}|g" ${armbianenv_conf_file}
+        sed -i "s|^overlay_prefix.*|overlay_prefix=${FAMILY}|g" ${armbianenv_conf_file}
     }
 
-    # Check if the /boot/*Env.txt file exists
-    [[ -f "${uenv_conf_file}" || -f "${armbianenv_conf_file}" ]] || error_msg "Missing [ /boot/*Env.txt ]"
+    # Check device configuration files
+    [[ -f "${uenv_conf_file}" || -f "${rename_extlinux_file}" || -f "${armbianenv_conf_file}" ]] || error_msg "Missing [ /boot/*Env.txt ]"
 }
 
 refactor_rootfs() {
@@ -703,8 +705,6 @@ refactor_rootfs() {
 
     # Delete related files
     rm -f etc/apt/sources.list.save
-    rm -f etc/apt/sources.list.d/*
-    rm -f etc/apt/trusted.gpg.d/*
     rm -rf usr/share/doc/linux-image-*
     rm -rf usr/lib/linux-image-*
     rm -f usr/sbin/ddbr
@@ -930,6 +930,7 @@ loop_rebuild() {
                     # Skip inapplicable kernels
                     if { [[ "${KERNEL_BRANCH}" == "rk3588" ]] && [[ "${kernel:0:5}" != "5.10." ]]; } ||
                         { [[ "${KERNEL_BRANCH}" == "6.x.y" ]] && [[ "${kernel:0:2}" != "6." ]]; } ||
+                        { [[ "${KERNEL_BRANCH}" == "5.10.y" ]] && [[ "${kernel:0:5}" != "5.10." ]]; } ||
                         { [[ "${KERNEL_BRANCH}" == "5.15.y" ]] && [[ "${kernel:0:5}" != "5.15." && "${kernel:0:4}" != "5.4." ]]; }; then
                         echo -e "(${j}.${i}) ${TIPS} The [ ${board} ] device cannot use [ ${kd}/${kernel} ] kernel, skip."
                         let i++

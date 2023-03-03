@@ -310,10 +310,10 @@ dd if=armbian.img  of=/dev/nvme0n1  bs=1M status=progress
 
 ### 8.3 Allwinner 系列安装方法
 
-将 Armbian 系统使用 Rufus 或者 balenaEtcher 等工具刷入 USB/TF/SD 中使用，或者将 Armbian 系统从 USB/TF/SD 卡使用 dd 命令写入 eMMC 中使用，命令中的 `/dev/mmcblk0` 以自己设备中存储为准，使用 `lsblk` 命令查看。
+登录 Armbian 系统 (默认用户: root, 默认密码: 1234) → 输入命令：
 
-```Shell
-dd if=armbian.img  of=/dev/mmcblk0  bs=1M  status=progress
+```yaml
+armbian-install
 ```
 
 ## 9. 编译 Armbian 内核
@@ -967,7 +967,7 @@ dtc -I dts -O dtb -o xxx.dtb xxx.dts
 
 平台文件分别放在 `build-armbian/armbian-files/platform-files/<platform>` 目录下，[Amlogic](../armbian-files/platform-files/amlogic)，[Rockchip](../armbian-files/platform-files/rockchip) 和 [Allwinner](../armbian-files/platform-files/allwinner) 分别共用各自平台的文件，其中 `bootfs` 目录下是 /boot 分区的文件，`rootfs` 目录下的是 Armbian 系统文件。
 
-如果个别设备有特殊差异化设置需求，在 `build-armbian/armbian-files/different-files` 目录下添加以 `BOARD` 命名的独立目录，根据需要建立 `bootfs` 目录添加系统 `/boot` 分区下的相关文件，建立 `rootfs` 目录添加系统文件，各文件夹命名以 `Armbian` 系统中的实际路径为准。
+如果个别设备有特殊差异化设置需求，在 `build-armbian/armbian-files/different-files` 目录下添加以 `BOARD` 命名的独立目录，根据需要建立 `bootfs` 目录添加系统 `/boot` 分区下的相关文件，如果建立了 `bootfs` 目录，制作 `Armbian` 镜像时将会删除从通用文件和平台文件中添加的 `bootfs` 相关的文件，使用此目录下的文件。根据需要建立 `rootfs` 目录添加系统文件，各文件夹命名以 `Armbian` 系统中的实际路径为准，用于添加新文件，或覆盖从通用文件和平台文件中添加的同名文件。
 
 #### 12.15.3 添加 u-boot 文件
 
