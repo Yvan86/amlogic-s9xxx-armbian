@@ -471,13 +471,16 @@ generate_uinitrd() {
     echo -e "${INFO} Backup the files in the [ /boot ] directory."
     boot_backup_path="/boot/backup"
     rm -rf ${boot_backup_path} && mkdir -p ${boot_backup_path}
-    mv -f /boot/{config-*,initrd.img-*,System.map-*,uInitrd-*,vmlinuz-*,uInitrd,zImage,Image} ${boot_backup_path} 2>/dev/null
+    mv -f /boot/{config-*,initrd.img-*,System.map-*,vmlinuz-*,uInitrd*,*Image} ${boot_backup_path} 2>/dev/null
     # Copy /boot related files into armbian system
     cp -f ${kernel_path}/${local_kernel_path}/System.map /boot/System.map-${kernel_outname}
     cp -f ${kernel_path}/${local_kernel_path}/.config /boot/config-${kernel_outname}
     cp -f ${kernel_path}/${local_kernel_path}/arch/arm64/boot/Image /boot/vmlinuz-${kernel_outname}
-    [[ "${PLATFORM}" == "amlogic" ]] && cp -f /boot/vmlinuz-${kernel_outname} /boot/zImage
-    [[ "${PLATFORM}" == "rockchip" ]] && ln -sf vmlinuz-${kernel_outname} /boot/Image
+    if [[ "${PLATFORM}" == "rockchip" || "${PLATFORM}" == "allwinner" ]]; then
+        cp -f /boot/vmlinuz-${kernel_outname} /boot/Image
+    else
+        cp -f /boot/vmlinuz-${kernel_outname} /boot/zImage
+    fi
     #echo -e "${INFO} Kernel copy results in the [ /boot ] directory: \n$(ls -l /boot) \n"
 
     # Backup current system files for /usr/lib/modules
@@ -497,18 +500,14 @@ generate_uinitrd() {
     cd /boot
     echo -e "${STEPS} Generate uInitrd file..."
 
-    [[ -f "${initramfs_conf}" ]] && {
-        echo -e "${INFO} Enable update_initramfs"
-        sed -i "s|^update_initramfs=.*|update_initramfs=yes|g" ${initramfs_conf}
-    }
+    # Enable update_initramfs
+    [[ -f "${initramfs_conf}" ]] && sed -i "s|^update_initramfs=.*|update_initramfs=yes|g" ${initramfs_conf}
 
     # Generate uInitrd file directly under armbian system
     update-initramfs -c -k ${kernel_outname} 2>/dev/null
 
-    [[ -f "${initramfs_conf}" ]] && {
-        echo -e "${INFO} Disable update_initramfs"
-        sed -i "s|^update_initramfs=.*|update_initramfs=no|g" ${initramfs_conf}
-    }
+    # Disable update_initramfs
+    [[ -f "${initramfs_conf}" ]] && sed -i "s|^update_initramfs=.*|update_initramfs=no|g" ${initramfs_conf}
 
     if [[ -f uInitrd ]]; then
         echo -e "${SUCCESS} The initrd.img and uInitrd file is Successfully generated."
