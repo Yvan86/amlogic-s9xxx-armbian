@@ -12,7 +12,7 @@
 # Copyright (C) 2021- https://github.com/unifreq
 # Copyright (C) 2021- https://github.com/ophub/amlogic-s9xxx-armbian
 #
-# Command: armbian-kernel -update && armbian-kernel -k 5.10.125
+# Command: armbian-kernel
 # Command optional parameters please refer to the source code repository
 #
 #================================= Functions list =================================
@@ -50,13 +50,10 @@ host_release="$(cat /etc/os-release | grep '^VERSION_CODENAME=.*' | cut -d"=" -f
 initramfs_conf="/etc/initramfs-tools/update-initramfs.conf"
 ophub_release_file="/etc/ophub-release"
 
-# Set the default value of the [ -r ] parameter
-# When set to [ -r kernel.org ], Kernel download from kernel.org
-kernel_org_repo="https://cdn.kernel.org/pub/linux/kernel/v5.x/"
 # Set the default for downloading kernel sources from github.com
 repo_owner="unifreq"
 repo_branch="main"
-build_kernel=("5.10.125" "5.15.50")
+build_kernel=("6.1.15" "5.15.100")
 auto_kernel="true"
 custom_name="-ophub"
 # Set the kernel compile object, options: dtbs / all
@@ -256,28 +253,17 @@ query_version() {
         # Identify the kernel mainline
         MAIN_LINE="$(echo ${KERNEL_VAR} | awk -F '.' '{print $1"."$2}')"
 
-        if [[ "${code_owner}" == "kernel.org" ]]; then
-            # latest_version="5.10.125"
-            latest_version="$(curl -s ${kernel_org_repo} | grep -oE linux-${MAIN_LINE}.[0-9]+.tar.xz | sort -rV | head -n 1 | grep -oE '[1-9].[0-9]{1,3}.[0-9]+')"
-            if [[ "${?}" -eq "0" && -n "${latest_version}" ]]; then
-                tmp_arr_kernels[${i}]="${latest_version}"
-            else
-                error_msg "Failed to query the kernel version in [ ${kernel_org_repo} ]"
-            fi
-            echo -e "${INFO} (${i}) [ ${tmp_arr_kernels[$i]} ] is kernel.org latest kernel. \n"
+        if [[ -z "${code_repo}" ]]; then linux_repo="linux-${MAIN_LINE}.y"; else linux_repo="${code_repo}"; fi
+        github_kernel_repo="${code_owner}/${linux_repo}/${code_branch}"
+        github_kernel_ver="https://raw.githubusercontent.com/${github_kernel_repo}/Makefile"
+        # latest_version="125"
+        latest_version="$(curl -s ${github_kernel_ver} | grep -oE "SUBLEVEL =.*" | head -n 1 | grep -oE '[0-9]{1,3}')"
+        if [[ "${?}" -eq "0" && -n "${latest_version}" ]]; then
+            tmp_arr_kernels[${i}]="${MAIN_LINE}.${latest_version}"
         else
-            if [[ -z "${code_repo}" ]]; then linux_repo="linux-${MAIN_LINE}.y"; else linux_repo="${code_repo}"; fi
-            github_kernel_repo="${code_owner}/${linux_repo}/${code_branch}"
-            github_kernel_ver="https://raw.githubusercontent.com/${github_kernel_repo}/Makefile"
-            # latest_version="125"
-            latest_version="$(curl -s ${github_kernel_ver} | grep -oE "SUBLEVEL =.*" | head -n 1 | grep -oE '[0-9]{1,3}')"
-            if [[ "${?}" -eq "0" && -n "${latest_version}" ]]; then
-                tmp_arr_kernels[${i}]="${MAIN_LINE}.${latest_version}"
-            else
-                error_msg "Failed to query the kernel version in [ github.com/${github_kernel_repo} ]"
-            fi
-            echo -e "${INFO} (${i}) [ ${tmp_arr_kernels[$i]} ] is github.com/${github_kernel_repo} latest kernel. \n"
+            error_msg "Failed to query the kernel version in [ github.com/${github_kernel_repo} ]"
         fi
+        echo -e "${INFO} (${i}) [ ${tmp_arr_kernels[$i]} ] is github.com/${github_kernel_repo} latest kernel. \n"
 
         let i++
     done
@@ -291,33 +277,13 @@ get_kernel_source() {
     cd ${current_path}
     echo -e "${STEPS} Start downloading the kernel source code..."
 
-    # kernel_folder > kernel_.tar.xz_file > download_from_kernel.org
     [[ -d "${kernel_path}" ]] || mkdir -p ${kernel_path}
+
     if [[ ! -d "${kernel_path}/${local_kernel_path}" ]]; then
-        if [[ "${code_owner}" == "kernel.org" ]]; then
-            if [[ -f "${kernel_path}/${local_kernel_path}.tar.xz" ]]; then
-                echo -e "${INFO} Unzip local files [ ${local_kernel_path}.tar.xz ]"
-                cd ${kernel_path}
-                tar -xJf ${local_kernel_path}.tar.xz
-                [[ "${?}" -eq "0" ]] || error_msg "[ ${local_kernel_path}.tar.xz ] file decompression failed."
-            else
-                echo -e "${INFO} [ ${kernel_version} ] Kernel loading from [ ${server_kernel_repo}${local_kernel_path}.tar.xz ]"
-                wget -q -P ${kernel_path} ${server_kernel_repo}${local_kernel_path}.tar.xz
-                if [[ "${?}" -eq "0" && -s "${kernel_path}/${local_kernel_path}.tar.xz" ]]; then
-                    echo -e "${SUCCESS} The kernel file is downloaded successfully."
-                    cd ${kernel_path}
-                    tar -xJf ${local_kernel_path}.tar.xz
-                    [[ -d "${local_kernel_path}" ]] || error_msg "[ ${local_kernel_path}.tar.xz ] file decompression failed."
-                else
-                    error_msg "Kernel file download failed!"
-                fi
-            fi
-        else
-            echo -e "${INFO} Start cloning from [ https://github.com/${server_kernel_repo} -b ${code_branch} ]"
-            git clone -q --single-branch --depth 1 https://github.com/${server_kernel_repo} -b ${code_branch} ${kernel_path}/${local_kernel_path}
-            [[ "${?}" -eq "0" ]] || error_msg "[ https://github.com/${server_kernel_repo} ] Clone failed."
-        fi
-    elif [[ "${code_owner}" != "kernel.org" ]]; then
+        echo -e "${INFO} Start cloning from [ https://github.com/${server_kernel_repo} -b ${code_branch} ]"
+        git clone -q --single-branch --depth 1 https://github.com/${server_kernel_repo} -b ${code_branch} ${kernel_path}/${local_kernel_path}
+        [[ "${?}" -eq "0" ]] || error_msg "[ https://github.com/${server_kernel_repo} ] Clone failed."
+    else
         # Get a local kernel version
         local_makefile="${kernel_path}/${local_kernel_path}/Makefile"
         local_makefile_version="$(cat ${local_makefile} | grep -oE "VERSION =.*" | head -n 1 | grep -oE '[0-9]{1,3}')"
@@ -520,11 +486,15 @@ generate_uinitrd() {
 
     # Restore the files in the [ /boot ] directory
     mv -f *${kernel_outname} ${out_kernel}/boot
-    mv -f ${boot_backup_path}/* . && rm -rf ${boot_backup_path}
+    mv -f ${boot_backup_path}/* .
 
     # Restore the files in the [ /usr/lib/modules ] directory
     rm -rf /usr/lib/modules/${kernel_outname}
-    mv -f ${modules_backup_path}/* /usr/lib/modules && rm -rf ${modules_backup_path}
+    mv -f ${modules_backup_path}/* /usr/lib/modules
+
+    # Remove temporary backup directory
+    sync && sleep 3
+    rm -rf ${boot_backup_path} ${modules_backup_path}
 }
 
 packit_dtbs() {
@@ -589,7 +559,7 @@ compile_selection() {
     echo -e "${SUCCESS} The [ sha256sums ] file has been generated"
 
     cd ${out_kernel}
-    tar -czf ${kernel_version}.tar.gz ${kernel_version} && sync && sleep 3
+    tar -czf ${kernel_version}.tar.gz ${kernel_version}
 
     echo -e "${INFO} Kernel series files are stored in [ ${out_kernel} ]."
 }
@@ -598,6 +568,7 @@ clean_tmp() {
     cd ${current_path}
     echo -e "${STEPS} Clear the space..."
 
+    sync && sleep 3
     rm -rf ${out_kernel}/{boot/,dtb/,modules/,header/,${kernel_version}/}
 
     echo -e "${SUCCESS} All processes have been completed."
@@ -608,18 +579,15 @@ loop_recompile() {
 
     j="1"
     for k in ${build_kernel[*]}; do
-        # kernel_version, such as [ 5.10.125 ]
+        # kernel_version, such as [ 6.1.15 ]
         kernel_version="${k}"
-        # kernel <VERSION> and <PATCHLEVEL>, such as [ 5.10 ]
+        # kernel <VERSION> and <PATCHLEVEL>, such as [ 6.1 ]
         kernel_verpatch="$(echo ${kernel_version} | awk -F '.' '{print $1"."$2}')"
-        # kernel <SUBLEVEL>, such as [ 125 ]
+        # kernel <SUBLEVEL>, such as [ 15 ]
         kernel_sub="$(echo ${kernel_version} | awk -F '.' '{print $3}')"
 
         # The loop variable assignment
-        if [[ "${code_owner}" == "kernel.org" ]]; then
-            server_kernel_repo="${kernel_org_repo}"
-            local_kernel_path="linux-${kernel_version}"
-        elif [[ -z "${code_repo}" ]]; then
+        if [[ -z "${code_repo}" ]]; then
             server_kernel_repo="${code_owner}/linux-${kernel_verpatch}.y"
             local_kernel_path="linux-${kernel_verpatch}.y"
         else

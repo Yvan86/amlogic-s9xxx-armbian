@@ -36,13 +36,13 @@
 
 ## 安装及升级 Armbian 的相关说明
 
-选择和你的盒子型号对应的 Armbian 固件，使用 [Rufus](https://rufus.ie/) 或者 [balenaEtcher](https://www.balena.io/etcher/) 等工具将固件写入 USB 里，然后把写好固件的 USB 插入盒子。
+选择和你的盒子型号对应的 Armbian 固件，不同设备的使用方法查看对应的说明。
 
 - ### 安装 Armbian 到 EMMC
 
 1. `Rockchip` 平台的安装方法请查看说明文档中的 [第 8 章节](build-armbian/documents/README.cn.md)。
 
-2. `Amlogic` 和 `Allwinner` 平台，登录 Armbian 系统 (默认用户: root, 默认密码: 1234) → 输入命令：
+2. `Amlogic` 和 `Allwinner` 平台，使用 [Rufus](https://rufus.ie/) 或者 [balenaEtcher](https://www.balena.io/etcher/) 等工具将固件写入 USB 里，然后把写好固件的 USB 插入盒子。登录 Armbian 系统 (默认用户: root, 默认密码: 1234) → 输入命令：
 
 ```yaml
 armbian-install
@@ -324,7 +324,7 @@ sudo apt-get install -y $(cat compile-kernel/tools/script/ubuntu2204-build-armbi
 - [amlogic-s9xxx-openwrt](https://github.com/ophub/amlogic-s9xxx-openwrt) 项目提供了在盒子中使用的 `OpenWrt` 系统，在支持 Armbian 的相关设备中同样适用。
 - [unifreq](https://github.com/unifreq/openwrt_packit) 为晶晨、瑞芯微和全志等更多盒子制作了 `OpenWrt` 系统，属于盒子圈的标杆，推荐使用。
 - [Scirese](https://github.com/Scirese/alarm) 在安卓电视盒子里测试了 `Arch Linux ARM` / `Manjaro` 系统的制作、安装和使用，具体详见他仓库中的相关说明。
-- [7Ji](https://7ji.github.io/) 在他的博客中发表了一些在 Amlogic 平台上的逆向工程和开发的文章，比如以 ArchLinux 的方式安装 ArchLinux ARM 系统，对 Amlogic 平台的启动机制的介绍等。在他的 [ampart](https://github.com/7Ji/ampart) 项目中，提供了一款分区工具，能够读取并编辑 Amlogic 的 eMMC 分区表和 DTB 内分区，可以 100% 利用 eMMC 空间。在 [amlogic-s9xxx-archlinuxarm](https://github.com/7Ji/amlogic-s9xxx-archlinuxarm) 项目中提供了 `Arch Linux ARM` 系统的制作和使用方法。
+- [7Ji](https://7ji.github.io/) 在他的博客中发表了一些在 Amlogic 平台上的逆向工程和开发的文章，比如以 ArchLinux 的方式安装 ArchLinux ARM 系统，对 Amlogic 平台的启动机制的介绍等。在他的 [ampart](https://github.com/7Ji/ampart) 项目中，提供了一款分区工具，能够读取并编辑 Amlogic 的 eMMC 分区表和 DTB 内分区，可以 100% 利用 eMMC 空间。在 [amlogic-s9xxx-archlinuxarm](https://github.com/7Ji/amlogic-s9xxx-archlinuxarm) 项目中提供了 `Arch Linux ARM` 系统的制作和使用方法。在 [YAopenvfD](https://github.com/7Ji/YAopenvfD) 项目中提供了另一个 openvfd 守护进程。
 
 ## 链接
 
