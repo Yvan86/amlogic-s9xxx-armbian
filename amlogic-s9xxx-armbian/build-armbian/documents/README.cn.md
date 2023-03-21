@@ -330,15 +330,27 @@ armbian-install
 armbian-update
 ```
 
-| 可选参数  | 默认值       | 选项        | 说明               |
-| -------  | -------     | ------     | ----------------  |
-| -k       | auto latest | [内核名称](https://github.com/ophub/kernel/tree/main/pub/stable)  | 设置更新内核名称  |
-| -v       | stable      | stable/dev | 指定内核版本分支     |
-| -m       | no          | yes/no     | 使用主线 u-boot     |
+| 可选参数  | 默认值     | 选项       | 说明               |
+| -------  | --------  | --------  | ----------------  |
+| -k       | 最新版     | [内核名称](https://github.com/ophub/kernel/tree/main/pub/stable) | 设置更新内核名称  |
+| -v       | stable    | stable/rk3588/dev | 指定内核版本分支     |
+| -m       | no        | yes/no    | 使用主线 u-boot     |
+| -b       | yes       | yes/no    | 更新内核时自动备份当前系统使用的内核    |
+| -r       | ""        | ""        | [救援] 使用 USB 中的系统内核更新 eMMC |
 
-举例: `armbian-update -k 5.15.50 -v dev -m yes`
+举例: `armbian-update -k 5.15.50 -v dev`
 
-如果当前目录下有成套的内核文件，将使用当前目录的内核进行更新（更新需要的 4 个内核文件是 `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-xxx.tar.gz`, `modules-xxx.tar.gz`。其他内核文件不需要，如果同时存在也不影响更新，系统可以准确识别需要的内核文件）。如果当前目录没有内核文件，将从服务器查询并下载同系列的最新内核进行更新。在设备支持的可选内核里可以自由更新，如从 5.10.125 内核更新为 5.15.50 内核。
+更新内核时会自动备份当前系统使用的内核，存储路径在 `/ddbr/backup` 目录里，保留最近使用过的 3 个版本的内核，如果新安装的内核不稳定，可以随时恢复回备份的内核：
+```shell
+# 进入备份的内核目录，如 5.10.125
+cd /ddbr/backup/5.10.125
+# 执行更新内核命令，会自动安装当前目录下的内核
+armbian-update
+```
+
+因特殊原因导致的更新不完整等问题，造成系统无法从 eMMC 启动时，可以从 USB 中启动任意内核版本的 Armbian 系统，运行 `armbian-update -r` 命令可以把 USB 中的系统内核更新至 eMMC 中，实现救援的目的。
+
+如果你访问 github.com 的网络不通畅，无法在线下载更新时，可以手动下载内核，上传至 Armbian 系统的任意目录，并进入内核目录，执行 `armbian-update` 进行本地安装。如果当前目录下有成套的内核文件，将使用当前目录的内核进行更新（更新需要的 4 个内核文件是 `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-xxx.tar.gz`, `modules-xxx.tar.gz`。其他内核文件不需要，如果同时存在也不影响更新，系统可以准确识别需要的内核文件）。在设备支持的可选内核里可以自由更新，如从 5.10.125 内核更新为 5.15.50 内核。
 
 ## 11. 安装常用软件
 
@@ -426,49 +438,14 @@ blacklist meson_ir
 
 #### 12.7.1 使用 interfaces 设置网络
 
-网络配置文件 [/etc/network/interfaces](../armbian-files/common-files/etc/network/interfaces) 的内容如下：
+网络配置文件 `/etc/network/interfaces` 的默认内容如下：
 
 ```yaml
 source /etc/network/interfaces.d/*
-
 # Network is managed by Network manager
-# You can choose one of the following two IP setting methods:
-# Use # to disable another setting method
-
-
-# 01. Enable dynamic DHCP to assign IP
-auto eth0
-iface eth0 inet dhcp
-        hwaddress ether 12:34:56:78:9A:BC
-
-
-# 02. Enable static IP settings(IP is modified according to the actual)
-#auto eth0
-#allow-hotplug eth0
-#iface eth0 inet static
-#address 192.168.1.100
-#netmask 255.255.255.0
-#gateway 192.168.1.6
-#dns-nameservers 192.168.1.6
-
-
-# 03. Docker install OpenWrt and communicate with each other
-#allow-hotplug eth0
-#no-auto-down eth0
-#auto eth0
-#iface eth0 inet manual
-#
-#auto macvlan
-#iface macvlan inet dhcp
-#        hwaddress ether 12:34:56:78:9a:bc
-#        pre-up ip link add macvlan link eth0 type macvlan mode bridge
-#        post-down ip link del macvlan link eth0 type macvlan mode bridge
-#
-#auto lo
-#iface lo inet loopback
+auto lo
+iface lo inet loopback
 ```
-
-默认采用 DHCP 动态 分配 IP 的策略（方法1），由 Armbian 所接入的网络路由器自动分配 IP。如果想改为静态 IP，可以把设置方法 1 禁用或删除，启用方法 2 的静态 IP 设置。
 
 ##### 12.7.1.1 由 DHCP 动态分配 IP 地址
 

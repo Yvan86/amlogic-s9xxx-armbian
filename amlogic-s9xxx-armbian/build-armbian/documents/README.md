@@ -322,13 +322,25 @@ armbian-update
 
 | Optional  | Default     | Value       | Description                   |
 | -------   | -------     | ----------  | ---------------------------   |
-| -k        | auto latest | [kernel name](https://github.com/ophub/kernel/tree/main/pub/stable)  | Set the kernel name |
-| -v        | stable      | stable/dev  | Set the kernel version branch |
+| -k        | latest      | [kernel name](https://github.com/ophub/kernel/tree/main/pub/stable)  | Set the kernel name |
+| -v        | stable      | stable/rk3588/dev  | Set the kernel version branch |
 | -m        | no          | yes/no      | Use Mainline u-boot           |
+| -b        | yes         | yes/no      | Automatically backup the current system kernel  |
+| -r        | ""          | ""          | [Rescue] Update eMMC with system kernel from USB |
 
-Example: `armbian-update -k 5.15.50 -v dev -m yes`
+Example: `armbian-update -k 5.15.50 -v dev`
 
-If there is a set of kernel files in the current directory, it will be updated with the kernel in the current directory (The 4 kernel files required for the update are `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-xxx.tar.gz`, `modules-xxx.tar.gz`. Other kernel files are not required. If they exist at the same time, it will not affect the update. The system can accurately identify the required kernel files). If there is no kernel file in the current directory, it will query and download the latest kernel of the same series from the server for update. The optional kernel supported by the device can be freely updated, such as from 5.10.125 kernel to 5.15.50 kernel.
+When updating the kernel, the kernel used by the current system will be automatically backed up. The storage path is in the `/ddbr/backup` directory, and the three recently used versions of the kernel will be preserved. If the newly installed kernel is unstable, the backed up kernel can be restored at any time:
+```shell
+# Enter the backup kernel directory, such as 5.10.125
+cd /ddbr/backup/5.10.125
+# Executing the update kernel command will automatically install the kernel in the current directory
+armbian-update
+```
+
+When the system cannot be started from eMMC due to incomplete updates and other problems caused by special reasons, you can start any kernel version of the Armian system from USB, and run the `armbian-update -r` command to update the system kernel in USB to eMMC to achieve the purpose of rescue.
+
+If the network where you access github.com is blocked and you cannot download updates online, you can manually download the kernel, upload it to any directory on the Armbian system, enter the kernel directory, and execute `armbian-update` for local installation. If there is a set of kernel files in the current directory, it will be updated with the kernel in the current directory (The 4 kernel files required for the update are `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-xxx.tar.gz`, `modules-xxx.tar.gz`. Other kernel files are not required. If they exist at the same time, it will not affect the update. The system can accurately identify the required kernel files). The optional kernel supported by the device can be freely updated, such as from 5.10.125 kernel to 5.15.50 kernel.
 
 ## 11. Install common software
 
@@ -415,49 +427,14 @@ to `/etc/modprobe.d/blacklist.conf` and reboot.
 
 ### 12.7 Network settings
 
-The content of the network configuration file [/etc/network/interfaces](../armbian-files/common-files/etc/network/interfaces) is as follows:
+The default content of the network configuration file `/etc/network/interfaces` is as follows:
 
 ```yaml
 source /etc/network/interfaces.d/*
-
 # Network is managed by Network manager
-# You can choose one of the following two IP setting methods:
-# Use # to disable another setting method
-
-
-# 01. Enable dynamic DHCP to assign IP
-auto eth0
-iface eth0 inet dhcp
-        hwaddress ether 12:34:56:78:9A:BC
-
-
-# 02. Enable static IP settings(IP is modified according to the actual)
-#auto eth0
-#allow-hotplug eth0
-#iface eth0 inet static
-#address 192.168.1.100
-#netmask 255.255.255.0
-#gateway 192.168.1.6
-#dns-nameservers 192.168.1.6
-
-
-# 03. Docker install OpenWrt and communicate with each other
-#allow-hotplug eth0
-#no-auto-down eth0
-#auto eth0
-#iface eth0 inet manual
-#
-#auto macvlan
-#iface macvlan inet dhcp
-#        hwaddress ether 12:34:56:78:9a:bc
-#        pre-up ip link add macvlan link eth0 type macvlan mode bridge
-#        post-down ip link del macvlan link eth0 type macvlan mode bridge
-#
-#auto lo
-#iface lo inet loopback
+auto lo
+iface lo inet loopback
 ```
-
-By default, the DHCP dynamic IP allocation strategy (method 1) is used, and the IP is automatically allocated by the network router connected to Armbian. If you want to change to static IP, you can disable or delete the setting method 1, and enable the static IP setting of method 2.
 
 #### 12.7.1 Dynamic IP address assignment by DHCP
 
