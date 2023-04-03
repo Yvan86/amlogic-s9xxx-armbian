@@ -326,21 +326,21 @@ armbian-install
 
 ```yaml
 # 使用 root 用户运行 (sudo -i)
-# 如果不指定其他参数，以下更新命令将更新到当前同系列内核的最新版本。
+# 如果不指定参数，将更新为最新版本。
 armbian-update
 ```
 
-| 可选参数  | 默认值     | 选项           | 说明               |
-| -------- | --------- | ------------- | ----------------- |
-| -k       | 最新版     | [内核名称](https://github.com/ophub/kernel/releases/tag/kernel_stable) | 设置更新内核名称  |
-| -v       | 自动化     | stable/rk3588/h6/flippy/dev | 指定内核[版本分支](https://github.com/ophub/kernel)     |
-| -m       | no        | yes/no        | 使用主线 u-boot     |
-| -b       | yes       | yes/no        | 更新内核时自动备份当前系统使用的内核    |
-| -r       | ophub/kernel | `<owner>/<repo>` | 设置从 github.com 下载内核的仓库 |
-| -c       | 无        | 自定义域名      | 设置加速访问 github.com 的 cdn 域名  |
-| -s       | 无        | 无            | [SOS] 使用 USB 中的系统内核恢复 eMMC |
+| 可选参数  | 默认值        | 选项           | 说明               |
+| -------- | ------------ | ------------- | ----------------- |
+| -k       | 最新版        | 内核版本       | 设置[内核版本](https://github.com/ophub/kernel/releases/tag/kernel_stable)  |
+| -t       | 自动化        | stable/rk3588/h6/flippy/dev | 设置[内核 tags](https://github.com/ophub/kernel)     |
+| -m       | no           | yes/no        | 使用主线 u-boot     |
+| -b       | yes          | yes/no        | 更新内核时自动备份当前系统使用的内核    |
+| -r       | ophub/kernel | `<owner>/<repo>` | 设置从 github.com 下载内核的仓库  |
+| -c       | 无           | 自定义域名      | 设置加速访问 github.com 的 cdn 域名  |
+| -s       | 无           | 无             | [SOS] 使用 USB 中的系统内核恢复 eMMC |
 
-举例: `armbian-update -k 5.15.50 -v dev`
+举例: `armbian-update -k 5.15.50 -t dev`
 
 更新内核时会自动备份当前系统使用的内核，存储路径在 `/ddbr/backup` 目录里，保留最近使用过的 3 个版本的内核，如果新安装的内核不稳定，可以随时恢复回备份的内核：
 ```shell
@@ -354,7 +354,17 @@ armbian-update
 
 如果你访问 github.com 的网络不通畅，无法在线下载更新时，可以手动下载内核，上传至 Armbian 系统的任意目录，并进入内核目录，执行 `armbian-update` 进行本地安装。如果当前目录下有成套的内核文件，将使用当前目录的内核进行更新（更新需要的 4 个内核文件是 `header-xxx.tar.gz`, `boot-xxx.tar.gz`, `dtb-xxx.tar.gz`, `modules-xxx.tar.gz`。其他内核文件不需要，如果同时存在也不影响更新，系统可以准确识别需要的内核文件）。在设备支持的可选内核里可以自由更新，如从 5.10.125 内核更新为 5.15.50 内核。
 
-如果你本地的网络访问 github.com 不流畅，可以通过 `armbian-update -c https://xxxcdn.com/` 这样的方式添加 CDN 加速服务，请自行查阅适合当地使用的加速 CDN 域名。
+如果你本地的网络访问 github.com 不流畅，可以通过 `armbian-update -c https://gh...xy.com/` 这样的方式添加 CDN 加速服务，请自行查阅适合当地使用的加速 CDN 域名。加速域名也可以固定填写到个性化配置文件 `/etc/ophub-release` 的 `GITHUB_CDN='https://gh...xy.com/'` 参数里，避免每次输入。
+
+通过 `-r`/`-t`/`-b`/`-c` 等参数设置的自定义选项，可以固定填写到个性化配置文件 `/etc/ophub-release` 的相关参数里，避免每次输入。对应设置为：
+
+```shell
+# 自定义修改参数的赋值
+-r  :  KERNEL_REPO='ophub/kernel'
+-t  :  KERNEL_TAGS='stable'
+-b  :  KERNEL_BACKUP='yes'
+-c  :  GITHUB_CDN='https://gh...xy.com/'
+```
 
 ## 11. 安装常用软件
 
