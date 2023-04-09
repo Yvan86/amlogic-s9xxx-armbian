@@ -171,14 +171,15 @@ sudo apt-get install -y $(cat compile-kernel/tools/script/ubuntu2204-build-armbi
 
 | Optional | Meaning    | Description                               |
 | -------- | ---------- | ----------------------------------------- |
-| -b       | Board      | Specify the Build system type. Write the build system name individually, such as `-b s905x3` . Multiple system use `_` connect such as `-b s905x3_s905d` . Use `all` for all board models. The model code is detailed in the `BOARD` setting in [model_database.conf](build-armbian/armbian-files/common-files/etc/model_database.conf) file. |
-| -k       | Kernel     | Specify the [kernel version](https://github.com/ophub/kernel/releases/tag/kernel_stable), Such as `-k 5.10.125` . Multiple kernel use `_` connection such as `-k 5.10.125_5.15.50` . The kernel version freely specified by the `-k` parameter is only valid for the kernel in the `stable`, and other kernels such as `rk3588` are specified by the [model_database.conf](build-armbian/armbian-files/common-files/etc/model_database.conf) file. |
+| -b       | Board      | Specify the Build system type. Write the build system name individually, such as `-b s905x3` . Multiple system use `_` connect such as `-b s905x3_s905d` . Use `all` for all board models. The model code is detailed in the `BOARD` setting in [model_database.conf](build-armbian/armbian-files/common-files/etc/model_database.conf) file. Default value: `all` |
+| -r       | KernelRepo | Specifies the `<owner>/<repo>` of the github.com kernel repository. Default value: `ophub/kernel` |
+| -u       | kernelUsage | Set the `tags suffix` of the kernel used, such as [stable](https://github.com/ophub/kernel/releases/tag/kernel_stable), [flippy](https://github.com/ophub/kernel/releases/tag/kernel_flippy), [dev](https://github.com/ophub/kernel/releases/tag/kernel_dev). Default value: `stable` |
+| -k       | Kernel     | Specify the [kernel version](https://github.com/ophub/kernel/releases/tag/kernel_stable), Such as `-k 5.10.125` . Multiple kernel use `_` connection such as `-k 5.10.125_5.15.50` . The kernel version freely specified by the `-k` parameter is only valid for the kernel in the `stable/flippy/dev`. Other kernel families such as [rk3588](https://github.com/ophub/kernel/releases/tag/kernel_rk3588) can only use specific kernels. |
 | -a       | AutoKernel | Set whether to automatically adopt the latest version of the kernel of the same series. When it is `true`, it will automatically find in the kernel library whether there is an updated version of the kernel specified in `-k` such as 5.10.125 version. If there is the latest version of same series, it will automatically Replace with the latest version. When set to `false`, the specified version of the kernel will be compiled. Default value: `true` |
-| -r       | KernelRepo | Specifies the `<owner>/<repo>` of the github.com kernel repository, Such as `-r ophub/kernel` |
-| -s       | Size       | Specify the ROOTFS partition size for the system. The default is 2560MiB, and the specified size must be greater than 2048MiB. Such as `-s 2560` |
-| -t       | RootfsType | Set the file system type of the ROOTFS partition of the system, the default is `ext4` type, and the options are `ext4` or `btrfs` type. Such as `-t btrfs` |
-| -n       | CustomName | Set the signature part of the system name. The default value is empty. You can add signatures such as `_server`, `_gnome_desktop` or `_ophub` as needed. Do not include spaces when setting custom signatures. |
-| -g       | GH_TOKEN   | Optional. Set ${{ secrets.GH_TOKEN }} for [api.github.com](https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#requests-from-personal-accounts) query. Default: `None` |
+| -t       | RootfsType | Set the file system type of the ROOTFS partition of the system, and the options are `ext4` or `btrfs` type. Such as `-t btrfs`. Default value: `ext4` |
+| -s       | Size       | Specify the ROOTFS partition size for the system, and the specified size must be greater than 2048MiB. Such as `-s 2560`, Default value: `2560` |
+| -n       | CustomName | Set the signature part of the system name. You can add signatures such as `_server`, `_gnome_desktop` or `_ophub` as needed. Do not include spaces when setting custom signatures. Default value: `None` |
+| -g       | GH_TOKEN   | Optional. Set ${{ secrets.GH_TOKEN }} for [api.github.com](https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#requests-from-personal-accounts) query. Default value: `None` |
 
 - `sudo ./rebuild`: Use the default configuration to pack all TV Boxes.
 - `sudo ./rebuild -b s905x3 -k 5.10.125`: recommend. Use the default configuration, specify a kernel and a system for compilation.
@@ -218,11 +219,12 @@ For the related settings of GitHUB RELEASES_TOKEN, please refer to: [RELEASES_TO
 | ------------------ | ----------------- | ----------------------------------- |
 | armbian_path       | None              | Set the path of the original Armbian file, support the file path in the current workflow such as `build/output/images/*.img`, and also support the use of the network download address such as: `https://dl.armbian.com/*/Armbian_*.img.xz`  |
 | armbian_board      | all               | Set the `board` of the packaged TV Boxes, function reference `-b`    |
+| kernel_repo        | ophub/kernel      | Specifies the `<owner>/<repo>` of the github.com kernel repository, function reference `-r` |
+| kernel_usage       | stable            | Set the `tags suffix` of the kernel used, function reference `-u` |
 | armbian_kernel     | 6.1.1_5.15.1      | Set kernel [version](https://github.com/ophub/kernel/releases/tag/kernel_stable), function reference `-k`        |
 | auto_kernel        | true              | Set whether to automatically use the latest version of the same series of kernels, function reference `-a` |
-| kernel_repo        | ophub/kernel | Specifies the `<owner>/<repo>` of the github.com kernel repository, function reference `-r` |
-| armbian_size       | 2560              | Set the size of the system ROOTFS partition, function reference `-s`             |
 | armbian_fstype     | ext4              | Set the file system type of the system ROOTFS partition, function reference `-t` |
+| armbian_size       | 2560              | Set the size of the system ROOTFS partition, function reference `-s`             |
 | armbian_sign       | None              | Set the signature part of the system name, function reference `-n`               |
 | gh_token           | None              | Optional. Set ${{ secrets.GH_TOKEN }}, function reference `-g` |
 
