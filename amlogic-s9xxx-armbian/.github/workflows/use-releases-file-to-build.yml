@@ -40,6 +40,7 @@ on:
           - s905l2-wojia
           - s905l2-e900v21e
           - s905l3
+          - s905l3-cm211
           - s905l3-unt400g1
           - s905l3a
           - s905l3a-cm311
@@ -105,13 +106,13 @@ on:
           - h68k
           - e25
           - nanopi-r5s
-          - photonicat
           - eaidk-610
           - king3399
           - tn3399
           - kylin3399
           - hugsun-zm
           - crrc
+          - smart-am40
           - beikeyun
           - l1pro
           - station-m1
@@ -123,9 +124,7 @@ on:
         default: "5.15.1_6.1.1"
         type: choice
         options:
-          - 5.4.1_5.10.1_5.15.1
           - 5.4.1_5.10.1
-          - 5.10.1_5.15.1
           - 5.15.1_6.1.1
           - 5.4.1
           - 5.10.1
