@@ -17,6 +17,14 @@ on:
         options:
           - jammy
           - bullseye
+      armbian_fstype:
+        description: "Select armbian rootfs type."
+        required: false
+        default: "ext4"
+        type: choice
+        options:
+          - ext4
+          - btrfs
       armbian_board:
         description: "Select device board."
         required: false
@@ -154,14 +162,14 @@ on:
           - stable
           - flippy
           - dev
-      armbian_fstype:
-        description: "Select armbian rootfs type."
+      armbian_storage:
+        description: "Select Armbian image storage time."
         required: false
-        default: "ext4"
+        default: "lts"
         type: choice
         options:
-          - ext4
-          - btrfs
+          - lts
+          - tmp
 
 env:
   TZ: America/New_York
@@ -200,19 +208,27 @@ jobs:
           armbian_buildpath="build/output/images"
           [[ -d "${armbian_buildpath}" ]] || mkdir -p "${armbian_buildpath}"
 
-          down_filename="$(curl \
-                            --header "authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-                            -s "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases" |
-                            grep -oE "Armbian_${{ inputs.set_release }}.*/Armbian_.*-trunk_.*.img.gz" |
-                            head -n 1
-                        )"
+          latest_version="$(curl -s \
+                              -H "Accept: application/vnd.github+json" \
+                              -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+                              https://api.github.com/repos/${GITHUB_REPOSITORY}/releases |
+                              jq '.[]' |
+                              jq -s --arg RTK "Armbian_${{ inputs.set_release }}_" '.[] | select(.tag_name | contains($RTK))' |
+                              jq -s '.[].assets[] | {data:.updated_at, url:.browser_download_url}' |
+                              jq -s --arg BOARD "-trunk_" '.[] | select((.url | contains($BOARD)) and (.url | endswith(".img.gz")))' |
+                              jq -s 'sort_by(.data)|reverse[]' |
+                              jq -s '.[0]' -c
+                          )"
 
-          [[ -z "${down_filename}" ]] && echo "Invalid download file." && exit 1
-          down_file="https://github.com/${GITHUB_REPOSITORY}/releases/download/${down_filename}"
+          [[ "${latest_version}" == "null" ]] && echo "Invalid Armbian image download address." && exit 1
+          latest_updated_at="$(echo ${latest_version} | jq -r '.data')"
+          latest_url="$(echo ${latest_version} | jq -r '.url')"
 
-          wget -q -P "${armbian_buildpath}" "${down_file}" && sync
+          wget -q -P "${armbian_buildpath}" "${latest_url}"
+          [[ "${?}" -ne "0" ]] && echo "Invalid Armbian image download address." && exit 1
           cd "${armbian_buildpath}" && gzip -df *.img.gz && sync
 
+          echo "build_tag=Armbian_${{ inputs.set_release }}_${{ inputs.armbian_storage }}_$(date +"%Y.%m")" >> ${GITHUB_OUTPUT}
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Rebuild Armbian [ ${{ inputs.set_release }} ]
@@ -233,9 +249,11 @@ jobs:
         uses: ncipollo/release-action@main
         if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
         with:
-          tag: Armbian_${{ inputs.set_release }}_${{ env.PACKAGED_OUTPUTDATE }}
+          tag: ${{ steps.down.outputs.build_tag }}
           artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
           allowUpdates: true
+          removeArtifacts: false
+          replacesArtifacts: true
           token: ${{ secrets.GH_TOKEN }}
           body: |
             These are the Armbian OS image
