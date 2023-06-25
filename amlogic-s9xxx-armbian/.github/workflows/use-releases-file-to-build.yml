@@ -129,7 +129,6 @@ on:
           - sw799
           - zysj
           - dg3399
-          - mpc1903
           - beikeyun
           - l1pro
           - station-m1
@@ -177,6 +176,14 @@ on:
         options:
           - save
           - temp
+      builder_name:
+        description: "Set Armbian builder signature."
+        required: false
+        default: "angel"
+        type: choice
+        options:
+          - angel
+          - yourname
 
 env:
   TZ: America/New_York
@@ -250,6 +257,7 @@ jobs:
           kernel_repo: ${{ inputs.kernel_repo }}
           kernel_usage: ${{ inputs.kernel_usage }}
           armbian_fstype: ${{ inputs.armbian_fstype }}
+          builder_name: ${{ inputs.builder_name }}
           gh_token: ${{ secrets.GH_TOKEN }}
 
       - name: Upload Armbian image to Release
