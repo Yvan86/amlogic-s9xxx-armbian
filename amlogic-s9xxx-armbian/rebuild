@@ -101,6 +101,8 @@ boot_mb="256"
 root_mb="2560"
 # Set ROOTFS partition file system type, options: [ ext4 / btrfs ]
 rootfs_type="ext4"
+# Set Armbian OS type (server / desktop)
+os_type="server"
 # Set Armbian builder signature
 builder_name=""
 
@@ -542,6 +544,8 @@ confirm_version() {
     [[ -n "${board_conf}" ]] || error_msg "[ ${board} ] config is missing!"
 
     # Get device settings options
+    MODEL_ID="$(echo ${board_conf} | awk -F':' '{print $1}')"
+    MODEL_NAME="$(echo ${board_conf} | awk -F':' '{print $2}')"
     SOC="$(echo ${board_conf} | awk -F':' '{print $3}')"
     FDTFILE="$(echo ${board_conf} | awk -F':' '{print $4}')"
     UBOOT_OVERLOAD="$(echo ${board_conf} | awk -F':' '{print $5}')"
@@ -619,7 +623,7 @@ make_image() {
     }
 
     # Set Armian file name
-    armbian_filename="Armbian_${armbian_rebuild_version}_${PLATFORM}_${board}_${release_codename}_${kernel}_$(date +"%Y.%m.%d").img"
+    armbian_filename="Armbian_${armbian_rebuild_version}_${PLATFORM}_${board}_${release_codename}_${kernel}_${os_type}_$(date +"%Y.%m.%d").img"
     build_image_file="${tmp_outpath}/${armbian_filename}"
     rm -f ${build_image_file}
 
@@ -1038,10 +1042,12 @@ refactor_rootfs() {
     echo "PLATFORM='${PLATFORM}'" >>${ophub_release_file}
     echo "VERSION_CODEID='${release_codeid}'" >>${ophub_release_file}
     echo "VERSION_CODENAME='${release_codename}'" >>${ophub_release_file}
-    echo "FAMILY='${FAMILY}'" >>${ophub_release_file}
-    echo "BOARD='${board}'" >>${ophub_release_file}
+    echo "MODEL_ID='${MODEL_ID}'" >>${ophub_release_file}
+    echo "MODEL_NAME='${MODEL_NAME}'" >>${ophub_release_file}
     echo "SOC='${SOC}'" >>${ophub_release_file}
     echo "FDTFILE='${FDTFILE}'" >>${ophub_release_file}
+    echo "FAMILY='${FAMILY}'" >>${ophub_release_file}
+    echo "BOARD='${board}'" >>${ophub_release_file}
     echo "KERNEL_REPO='${kernel_repo}'" >>${ophub_release_file}
     echo "KERNEL_TAGS='${KERNEL_TAGS}'" >>${ophub_release_file}
     echo "KERNEL_VERSION='${kernel}'" >>${ophub_release_file}
