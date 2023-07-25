@@ -1,37 +1,37 @@
 # LED Screen Display Control Instructions
 
-- The configuration file is located in the [/usr/share/openvfd](../armbian-files/platform-files/amlogic/rootfs/usr/share/openvfd) directory of the `Armbian/OpenWrt` system. The command file for the `Armbian` system is located at [/usr/sbin/armbian-openvfd](../armbian-files/platform-files/amlogic/rootfs/usr/sbin/armbian-openvfd), and the command file for the `OpenWrt` system is located at [/usr/sbin/openwrt-openvfd](https://github.com/ophub/amlogic-s9xxx-openwrt/blob/main/make-openwrt/openwrt-files/common-files/usr/sbin/openwrt-openvfd). If it is not available in the current system, it can be manually uploaded and execute permission can be granted: `chmod +x /usr/share/openvfd/vfdservice /usr/sbin/*-openvfd`.
+- The configuration files are located in the [/usr/share/openvfd](../armbian-files/platform-files/amlogic/rootfs/usr/share/openvfd) directory of the `Armbian/OpenWrt` system. The command file for the `Armbian` system is at [/usr/sbin/armbian-openvfd](../armbian-files/platform-files/amlogic/rootfs/usr/sbin/armbian-openvfd), and the command file for the `OpenWrt` system is at [/usr/sbin/openwrt-openvfd](https://github.com/ophub/amlogic-s9xxx-openwrt/blob/main/make-openwrt/openwrt-files/common-files/usr/sbin/openwrt-openvfd). If they are not currently in the system, they can be manually uploaded, and file execution permissions can be assigned: `chmod +x /usr/share/openvfd/vfdservice /usr/sbin/*-openvfd`.
 
-- Upgrade the system kernel to the latest version. The `Armbian` system uses the `armbian-update` command to upgrade. The `OpenWrt` system uses the `System Menu` -> `Amlogic Service` -> `Online Download Update` function to upgrade.
+- Upgrade the system kernel to the latest version. The `Armbian` system uses the `armbian-update` command for upgrades. The `OpenWrt` system upgrades using `System Menu` → `Amlogic Service` → `Online Download Update`.
 
-- Currently, devices such as `x96max.conf`, `x96maxplus.conf`, `h96max-x3.conf`, `hk1-x3.conf`, `hk1box.conf`, `tx3.conf`, `x96air.conf`, etc. have been tested. The configuration files for other devices can be modified by referring to [arthur-liberman/vfd-configurations](https://github.com/arthur-liberman/vfd-configurations) and [LibreELEC/linux_openvfd](https://github.com/LibreELEC/linux_openvfd/tree/master/conf). Adjust the corresponding content in the configuration file on these two websites and use the value of the second field after subtracting `1`. For example:
+- Currently, `x96max.conf`, `x96maxplus.conf`, `h96max-x3.conf`, `hk1-x3.conf`, `hk1box.conf`, `tx3.conf`, `x96air.conf` and other devices have been tested. Configurations for other devices can be modified by checking: [arthur-liberman/vfd-configurations](https://github.com/arthur-liberman/vfd-configurations) and [LibreELEC/linux_openvfd](https://github.com/LibreELEC/linux_openvfd/tree/master/conf). The second field value in the corresponding content in the configuration files from these two websites needs to be reduced by `1`. For example:
 
 ```yaml
 vfd_gpio_clk='0,69,0'
 vfd_gpio_dat='0,70,0'
 ```
-Change to:
+Modify to:
 
 ```yaml
 vfd_gpio_clk='0,68,0'
 vfd_gpio_dat='0,69,0'
 ```
 
-- Using the configuration of [x96maxplus](../armbian-files/platform-files/amlogic/rootfs/usr/share/openvfd/conf/x96maxplus.conf) as an example: If the order of the displayed time text is incorrect, you can adjust the number sequence of `vfd_chars='4,0,1,2,3'` to `vfd_chars='1,2,3,4,0'` for testing. If the time is displayed in reverse, you can adjust the `first value 0x02` in `vfd_display_type='0x02,0x00,0x01,0x00'` to `0x01` for testing. The content displayed can be adjusted according to the specific situation supported by your device in `functions='usb apps setup sd hdmi cvbs'`.
+- Taking the configuration of [x96maxplus](../armbian-files/platform-files/amlogic/rootfs/usr/share/openvfd/conf/x96maxplus.conf) as an example: If the order of the displayed time text is incorrect, you can adjust the order of numbers in `vfd_chars='4,0,1,2,3'` to `vfd_chars='1,2,3,4,0'` for testing. If the time is displayed upside down, you can adjust the `first value 0x02` in `vfd_display_type='0x02,0x00,0x01,0x00'` to `0x01` for testing. The content displayed can be adjusted according to the specific situation of your device in `functions='usb apps setup sd hdmi cvbs'`.
 
-- Rename the configuration file as `diy.conf` and upload it to the `/usr/share/openvfd/conf` directory. Enter the command `armbian-openvfd 99` to test.
+- Rename the configuration file to `diy.conf` and upload it to the `/usr/share/openvfd/conf` directory, then enter the command `armbian-openvfd 99` for testing.
 
-- You can disable the LED display and clear the system process by using the command `armbian-openvfd 0`. Before testing new configurations each time, please execute this disable command first, then execute `armbian-openvfd 99` to test the modified configuration.
+- The command `armbian-openvfd 0` can disable the LED display and clear the system process. Before each new configuration test, please first execute this disable command, and then execute `armbian-openvfd 99` to test the modified configuration.
 
-- After the screen display is normal, it can be added to the startup task. In the following command, change `15` to your `box number`:
+- After the screen display is normal, you can add it to the boot autostart task, change the `15` in the following command to your `box number`:
 
 ```yaml
-# Execute the following command in the terminal to enable openvfd service
+# Execute the following command in the terminal to enable the openvfd service
 sed -i 's|^#*openvfd_enable=.*|openvfd_enable="yes"|g' /etc/custom_service/start_service.sh
 sed -i 's|^#*openvfd_boxid=.*|openvfd_boxid="15"|g' /etc/custom_service/start_service.sh
 ```
 
-- Welcome everyone to test and share their own device configuration files (`diy.conf`) to benefit more people.
+- Everyone is welcome to test and share their device's configuration file (diy.conf) to benefit more people.
 
 |  BoxName   | `BoxID` |  Armbian Command      |   OpenWrt Command       |  Function   |
 | ---------- | ------- | --------------------- | ----------------------- | ----------- |

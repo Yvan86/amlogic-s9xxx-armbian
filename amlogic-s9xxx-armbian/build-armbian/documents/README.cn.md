@@ -119,13 +119,15 @@ Personal center: Settings > Developer settings > Personal access tokens > Genera
 系统编译的流程在 [.github/workflows/build-armbian.yml](../../.github/workflows/build-armbian.yml) 文件里控制，在 workflows 目录下还有其他 .yml 文件，实现其他不同的功能。编译系统时采用了 Armbian 官方的当前代码进行实时编译，相关参数可以查阅官方文档。
 
 ```yaml
-- name: Compile Armbian [ ${{ env.ARMBIAN_BOARD }} ]
+- name: Compile Armbian [ ${{ inputs.set_release }} ]
   id: compile
+  if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
   run: |
+    # Compile method and parameter description: https://docs.armbian.com/Developer-Guide_Build-Options
     cd build/
-    ./compile.sh RELEASE=${{ env.ARMBIAN_RELEASE }} BOARD=odroidn2 BRANCH=current BUILD_ONLY=default HOST=armbian EXPERT=yes \
-        BUILD_DESKTOP=no BUILD_MINIMAL=no KERNEL_CONFIGURE=no CLEAN_LEVEL="make,cache,alldebs,sources" COMPRESS_OUTPUTIMAGE="sha"
-    echo "build_tag=Armbian_${{ env.ARMBIAN_RELEASE }}_$(date +"%m.%d.%H%M")" >> ${GITHUB_OUTPUT}
+        ./compile.sh RELEASE=${{ inputs.set_release }} BOARD=odroidn2 BRANCH=current BUILD_MINIMAL=no \
+                      BUILD_ONLY=default HOST=armbian BUILD_DESKTOP=no EXPERT=yes KERNEL_CONFIGURE=no \
+                      COMPRESS_OUTPUTIMAGE="sha" SHARE_LOG=yes
     echo "status=success" >> ${GITHUB_OUTPUT}
 ```
 
@@ -268,7 +270,7 @@ ROCK-5B 在主板上有一个 SPI 闪存，将引导加载程序安装到 SPI �
 </div>
 
 - 使用读卡器安装：将 M.2 NVMe SSD 插入 M.2 NVMe SSD 到 USB3.0 读卡器，以连接到主机。使用 Rufus 或者 balenaEtcher 等工具将 Armbian 系统镜像写入 NVMe 里，然后把写好系统的 NVMe 插入设备即可使用。
-- 使用 microSD 卡安装：将 Armbian 系统镜像写入 microSD 卡，将 microSD 卡插入设备并启动，上传 `1rmbian.img` 镜像文件到 microSD 卡，使用 `dd` 命令将 Armbian 镜像写入 NVMe 中，命令如下：
+- 使用 microSD 卡安装：将 Armbian 系统镜像写入 microSD 卡，将 microSD 卡插入设备并启动，上传 `armbian.img` 镜像文件到 microSD 卡，使用 `dd` 命令将 Armbian 镜像写入 NVMe 中，命令如下：
 
 ```Shell
 dd if=armbian.img  of=/dev/nvme0n1  bs=1M status=progress
@@ -457,7 +459,7 @@ armbian-software
 
 - 以 x96max+ 为例，在盒子的主板上确认 [短接点](https://user-images.githubusercontent.com/68696949/110590933-67785300-81b3-11eb-9860-986ef35dca7d.jpg) 的位置，下载盒子的 [Android TV 系统包](https://github.com/ophub/kernel/releases/tag/tools)。其他常见设备的安卓 TV 系统系统及对应的短接点示意图也可以在此[下载查看](https://github.com/ophub/kernel/releases/tag/tools)。
 
-```
+```shell
 操作方法：
 
 1. 打开刷机软件 USB Burning Tool:
@@ -591,9 +593,7 @@ wlan1              wifi
 
 ###### 12.7.2.1.2 获取现有网络连接名称
 
-查看设备现有哪些网络连接, 包含使用中和未使用的连接。
-
-*) 在新建网络连接时, 不建议使用已经存在的连接名称。
+查看设备现有哪些网络连接, 包含使用中和未使用的连接。在新建网络连接时, 不建议使用已经存在的连接名称。
 
 ```shell
 nmcli connection show | grep -E ".*|^[N].*" | awk '{printf "%-19s%-19s\n", $1,$3}'
@@ -1099,7 +1099,6 @@ adb pull /data/local/mybox_gpio.txt C:\mybox
 <img width="400" alt="image" src="https://user-images.githubusercontent.com/68696949/189039426-c127631f-77ca-4fcb-9fb6-4220045d712b.png">
 <img width="400" alt="image" src="https://user-images.githubusercontent.com/68696949/189029320-e43a4cc9-b4b5-4de4-92fe-b17bd29020d0.png">
 </div>
-
 
 💡提示：在写入 eMMC 进行测试前，请先查看 12.3 的救砖方法。务必掌握短接点位置，有原厂 .img 格式的安卓系统文件，并进行过短接刷机测试，确保救砖方法都已经掌握的情况下再进行写入测试。
 

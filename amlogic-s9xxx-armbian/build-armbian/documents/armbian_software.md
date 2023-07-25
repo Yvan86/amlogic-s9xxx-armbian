@@ -58,17 +58,17 @@ According to user feedback and demands in the [Issue](https://github.com/ophub/a
 | 308 | PVE                   | [Home](https://github.com/pimox/pimox7) | https://IP:8006 | Proxmox Virtual Environment is an open source server virtualization management solution based on QEMU/KVM and LXC. You can manage virtual machines, containers, highly available clusters, storage and networks with an integrated, easy-to-use web interface or via CLI. |
 | 309 | CasaOS                | [Home](https://github.com/IceWhaleTech/CasaOS) | https://IP:81 | CasaOS is a simple, easy-to-use, elegant open-source Personal Cloud system. |
 
-## Instructions for Using the Software Center
+## Software Center Usage Guide
 
-Login to the Armbian system → enter command:
+Log into the Armbian system → Enter the command:
 
-```yaml
+```shell
 armbian-software
 ```
 
-The current list of integrated software for quick installation/management will appear, such as:
+A list of integrated software shortcuts for installation/management will appear, such as:
 
-```yaml
+```shell
 root@armbian:~# armbian-software
 [ STEPS ] Start selecting software [ Current system: debian/bullseye ]...
 ----------------------------------------------------------
@@ -82,12 +82,12 @@ ID    NAME                STATE           MANAGE
 [ OPTIONS ] Please Input Software ID:
 ```
 
-- `Uninstalled software`: The status is displayed as `not-installed`. Enter the corresponding `ID` of the software to `install`.
-- `Installed software`: The status is displayed as `installed`. Enter the corresponding `ID` of the software and select `update` or `delete` according to the prompt.
+- `Uninstalled software`: The status shows `not-installed`, input the `ID` of the software to `install`.
+- `Installed software`: The status shows `installed`, input the `ID` of the software and choose to `update` or `remove` as prompted.
 
-## Development Instructions for the Software Center
+## Software Center Development Guide
 
-The scripts/commands for the software center are stored in the [/usr/share/ophub/armbian-software](../armbian-files/common-files/usr/share/ophub/armbian-software) directory. You can use the `armbian-software -u` command to synchronize and download this directory to your local machine, updating the local software center list. The files that start with numbers are the corresponding software's `one-click installation script`. [software-command.sh](../armbian-files/common-files/usr/share/ophub/armbian-software/software-command.sh) is the `unified command file` for installing/updating/removing software using commands. [software-list.conf](../armbian-files/common-files/usr/share/ophub/armbian-software/software-list.conf) is the software list configuration file, explained as follows:
+The scripts/commands of the software center are stored in the [/usr/share/ophub/armbian-software](../armbian-files/common-files/usr/share/ophub/armbian-software) directory. You can use the `armbian-software -u` command to sync and download this directory to the local system, updating the local software center list. The files starting with a number are `one-click installation script` files for the corresponding software. [software-command.sh](../armbian-files/common-files/usr/share/ophub/armbian-software/software-command.sh) is a `unified instruction file` for installing/updating/removing software by commands. [software-list.conf](../armbian-files/common-files/usr/share/ophub/armbian-software/software-list.conf) is the software list configuration file, explained as follows:
 
 ```yaml
 # 1.ID     2.Software Name     3.AuthMethod@Package      4.Execute Selection     5.Supported Release
@@ -99,17 +99,17 @@ The scripts/commands for the software center are stored in the [/usr/share/ophub
 ```
 
 - `ID`: The `unique serial number` of the software.
-- `Software Name`: The `name of the software` (name length should be less than 40 characters).
-- `AuthMethod@Package`: The `checking method` for the installation status of the software and the corresponding `software package`, separated by the `@` symbol.
-  - For images installed using `docker` containers, use the `docker` method to check. For example, to check if the `portainer` image is installed, use `docker@portainer`.
-  - For software packages installed using the `apt` method, use the `dpkg` method to check. For example, to check if the `firefox` package is installed, use `dpkg@firefox`.
-  - For binary executable files downloaded and installed using methods such as `wget`, use the `which` method to check. For example, to check if the `frpc` service is installed, use `which@frpc`.
-- `Execute Selection`: Set whether to use the `unified command file` or `independent script` to manage the software.
-  - For `relatively concise` operation commands, they are centralized in the `command-docker.sh / command-desktop.sh / command-service.sh` files according to the software classification, named after the software's serial number. For example, the operations for `portainer`, whose serial number is `102`, are written in `software_203()`.
-  - For `more complex and lengthy instruction content`, an independent script file is used for management. For example, the independent script for installing `frpc` is named `302-frpc.sh`, starting with the serial number.
-- `Supported Release`: Set the supported Armbian `system version`. Separated by the `@` symbol.
+- `Software Name`: The `software name` (the name length is required to be less than 40 characters).
+- `AuthMethod@Package`: The `check method` for the installation status of the software and the corresponding `software package`, separated by the `@` symbol.
+  - For software installed with the `docker` container, check with the `docker` method, such as checking whether the `portainer` image is installed, check with `docker@portainer`.
+  - For software installed with the `apt` method, check with the `dpkg` method, such as checking whether the `firefox` software package is installed, check with `dpkg@firefox`.
+  - For binary executable files installed by downloading with methods such as `wget`, check with the `which` method, such as checking whether the `frpc` service is installed, check with `which@frpc`.
+- `Execute Selection`: Set the software to use a `unified instruction file` or an `independent script` for management.
+  - For `more streamlined` operation commands, they are collectively written in `command-docker.sh / command-desktop.sh / command-service.sh` files according to software classification, and named by software number. For example, the serial number of `portainer` is `102`, and its operation is written in `software_203()`.
+  - For operations that are `more complex and long in instructions`, they are managed by independent script files. For example, the independent script for installing `frpc` is named `302-frpc.sh` with the number as the prefix.
+- `Supported Release`: Set the supported Armbian `system version`. Use the `@` symbol for separation.
 
-Welcome everyone to add more software. You can also submit support requirements in the [Issue](https://github.com/ophub/amlogic-s9xxx-armbian/issues) section.
+We welcome everyone to contribute more software. Feel free to submit support requests in the [Issue](https://github.com/ophub/amlogic-s9xxx-armbian/issues).
 
 
 
@@ -177,13 +177,13 @@ Welcome everyone to add more software. You can also submit support requirements 
 
 登录 Armbian 系统 → 输入命令：
 
-```yaml
+```shell
 armbian-software
 ```
 
 将出现当前已经集成的软件快捷安装/管理列表，如：
 
-```yaml
+```shell
 root@armbian:~# armbian-software
 [ STEPS ] Start selecting software [ Current system: debian/bullseye ]...
 ----------------------------------------------------------
