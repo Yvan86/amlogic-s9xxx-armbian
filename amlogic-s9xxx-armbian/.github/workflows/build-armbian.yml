@@ -253,13 +253,13 @@ jobs:
 
           # Create temporary directory
           rootfs_tmp="build/output/images/rootfs_tmp"
-          sudo mkdir -p ${rootfs_tmp}
+          mkdir -p ${rootfs_tmp}
           sudo chown root:root ${rootfs_tmp}
           [[ "${?}" == "0" ]] && echo -e "01. Temporary directory creation completed."
 
           # Save Armbian rootfs
           [[ -n "${rootfs_file}" ]] && {
-              sudo tar -I zstd -xvf ${rootfs_file} -C ${rootfs_tmp}/ >/dev/null
+              sudo tar -mxf ${rootfs_file} -C ${rootfs_tmp}/
               cd ${rootfs_tmp}/
                   sudo tar -czf ${save_rootfs_name}.tar.gz *
                   sudo mv -f ${save_rootfs_name}.tar.gz ../
@@ -275,7 +275,7 @@ jobs:
           }
 
           # Add sha256sum verification files
-          sudo rm -rf $(ls . | grep -vE ".img.gz|.tar.gz" | xargs) 2>/dev/null
+          sync && sudo rm -rf $(ls . | grep -vE ".img.gz|.tar.gz" | xargs) 2>/dev/null
           for file in *; do [[ ! -d "${file}" ]] && sha256sum "${file}" >"${file}.sha"; done
           [[ "${?}" == "0" ]] && echo -e "04. The files in the current directory:\n$(ls -l .)"
 
