@@ -4,7 +4,7 @@
 
 - Upgrade the system kernel to the latest version. The `Armbian` system uses the `armbian-update` command for upgrades. The `OpenWrt` system upgrades using `System Menu` → `Amlogic Service` → `Online Download Update`.
 
-- Currently, `x96max.conf`, `x96maxplus.conf`, `h96max-x3.conf`, `hk1-x3.conf`, `hk1box.conf`, `tx3.conf`, `x96air.conf` and other devices have been tested. Configurations for other devices can be modified by checking: [arthur-liberman/vfd-configurations](https://github.com/arthur-liberman/vfd-configurations) and [LibreELEC/linux_openvfd](https://github.com/LibreELEC/linux_openvfd/tree/master/conf). The second field value in the corresponding content in the configuration files from these two websites needs to be reduced by `1`. For example:
+- Currently, `x96max.conf`, `x96maxplus.conf`, `h96max-x3.conf`, `hk1-x3.conf`, `hk1box.conf`, `tx3.conf`, `x96air.conf`, `x88pro-x3.conf` and other devices have been tested. Configurations for other devices can be modified by checking: [arthur-liberman/vfd-configurations](https://github.com/arthur-liberman/vfd-configurations) and [LibreELEC/linux_openvfd](https://github.com/LibreELEC/linux_openvfd/tree/master/conf). The second field value in the corresponding content in the configuration files from these two websites needs to be reduced by `1`. For example:
 
 ```yaml
 vfd_gpio_clk='0,69,0'
@@ -48,6 +48,7 @@ sed -i 's|^#*openvfd_boxid=.*|openvfd_boxid="15"|g' /etc/custom_service/start_se
 | tx9-pro    |  21     |  armbian-openvfd 21   |   openwrt-openvfd 21    | Enable LED  |
 | x92        |  22     |  armbian-openvfd 22   |   openwrt-openvfd 22    | Enable LED  |
 | whale      |  23     |  armbian-openvfd 23   |   openwrt-openvfd 23    | Enable LED  |
+| x88pro-x3  |  24     |  armbian-openvfd 24   |   openwrt-openvfd 24    | Enable LED  |
 | diy        |  99     |  armbian-openvfd 99   |   openwrt-openvfd 99    | Enable LED  |
 | -          |  0      |  armbian-openvfd 0    |   openwrt-openvfd 0     | Disable LED |
 | -          |  -u     |  armbian-openvfd -u   |   openwrt-openvfd -u    | Update Conf |
@@ -58,7 +59,7 @@ sed -i 's|^#*openvfd_boxid=.*|openvfd_boxid="15"|g' /etc/custom_service/start_se
 
 - 将系统的内核升级到最新版本。`Armbian` 系统使用 `armbian-update` 命令升级。`OpenWrt` 系统使用 `系统菜单` → `晶晨宝盒` → `在线下载更新` 功能升级。
 
-- 目前有 `x96max.conf`、`x96maxplus.conf`、`h96max-x3.conf`、`hk1-x3.conf`、`hk1box.conf`、`tx3.conf`、`x96air.conf` 等设备经过测试，其他设备的配置可以查看：[arthur-liberman/vfd-configurations](https://github.com/arthur-liberman/vfd-configurations) 和 [LibreELEC/linux_openvfd](https://github.com/LibreELEC/linux_openvfd/tree/master/conf) 进行修改，需要把这两个网站中配置文件里对应内容中进行调整，把第二个字段的值减 `1` 后使用，如：
+- 目前有 `x96max.conf`、`x96maxplus.conf`、`h96max-x3.conf`、`hk1-x3.conf`、`hk1box.conf`、`tx3.conf`、`x96air.conf` 和 `x88pro-x3.conf` 等设备经过测试，其他设备的配置可以查看：[arthur-liberman/vfd-configurations](https://github.com/arthur-liberman/vfd-configurations) 和 [LibreELEC/linux_openvfd](https://github.com/LibreELEC/linux_openvfd/tree/master/conf) 进行修改，需要把这两个网站中配置文件里对应内容中进行调整，把第二个字段的值减 `1` 后使用，如：
 
 ```yaml
 vfd_gpio_clk='0,69,0'
@@ -102,7 +103,7 @@ sed -i 's|^#*openvfd_boxid=.*|openvfd_boxid="15"|g' /etc/custom_service/start_se
 | tx9-pro    |  21      |  armbian-openvfd 21   |   openwrt-openvfd 21    | 启用 LED |
 | x92        |  22      |  armbian-openvfd 22   |   openwrt-openvfd 22    | 启用 LED |
 | whale      |  23      |  armbian-openvfd 23   |   openwrt-openvfd 23    | 启用 LED |
+| x88pro-x3  |  24      |  armbian-openvfd 24   |   openwrt-openvfd 24    | 启用 LED |
 | diy        |  99      |  armbian-openvfd 99   |   openwrt-openvfd 99    | 启用 LED |
 | -          |  0       |  armbian-openvfd 0    |   openwrt-openvfd 0     | 禁用 LED |
 | -          |  -u      |  armbian-openvfd -u   |   openwrt-openvfd -u    | 更新配置  |
-
