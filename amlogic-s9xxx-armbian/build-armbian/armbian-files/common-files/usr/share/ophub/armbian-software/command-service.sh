@@ -344,11 +344,16 @@ software_308() {
     install)
         echo -e "${STEPS} Start installing PVE..."
 
-        # Add PVE software source, Reference documentation: https://www.zhou.pp.ua/2023/08/08/n1/
-        if [[ "${VERSION_CODENAME}" =~ ^(bullseye|bookworm)$ ]]; then
-            echo -e "${STEPS} Start adding [ ${VERSION_CODENAME} ] software source..."
+        # Add PVE software source
+        echo -e "${STEPS} Start adding [ ${VERSION_CODENAME} ] software source..."
+        if [[ "${VERSION_CODENAME}" == "bookworm" ]]; then
+            # Reference documentation: Cooip JM
             echo "deb https://mirrors.apqa.cn/proxmox/debian/pve ${VERSION_CODENAME} port" >/etc/apt/sources.list.d/pveport.list
             curl https://mirrors.apqa.cn/proxmox/debian/pveport.gpg -o /etc/apt/trusted.gpg.d/pveport.gpg
+        elif [[ "${VERSION_CODENAME}" == "bullseye" ]]; then
+            # Reference documentation: https://www.zhou.pp.ua/2023/08/08/n1/
+            echo "deb https://raw.githubusercontent.com/pimox/pimox7/master/ dev/" >/etc/apt/sources.list.d/pimox.list
+            curl https://raw.githubusercontent.com/pimox/pimox7/master/KEY.gpg | apt-key add -
         else
             error_msg "This version is not supported: [ ${VERSION_CODENAME} ]"
         fi
@@ -436,7 +441,12 @@ EOF
         echo -e "${INFO} Adjust certificate."
         sudo rm -f /etc/pve/pve-root-ca.pem /etc/pve/priv/pve-root-ca.* /etc/pve/local/pve-ssl.*
         sudo pvecm updatecerts -f
-        sudo service pveproxy restart
+
+        # Add startup service
+        echo -e "${INFO} Add pveproxy as a startup service."
+        sudo systemctl daemon-reload
+        sudo systemctl enable --now pveproxy
+        sudo systemctl restart pveproxy
 
         # Adjust sshd_config (Fix the SSH certificate access modified by PVE)
         [[ -L ~/.ssh/authorized_keys ]] && {
