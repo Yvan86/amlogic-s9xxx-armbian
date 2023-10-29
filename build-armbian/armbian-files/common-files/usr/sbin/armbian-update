@@ -53,7 +53,7 @@ STEPS="[\033[95m STEPS \033[0m]"
 INFO="[\033[94m INFO \033[0m]"
 SUCCESS="[\033[92m SUCCESS \033[0m]"
 FINISH="[\033[93m FINISH \033[0m]"
-HINT="[\033[93m HINT \033[0m]"
+PROMPT="[\033[93m PROMPT \033[0m]"
 ERROR="[\033[91m ERROR \033[0m]"
 #
 #==================================================================================================
@@ -71,7 +71,7 @@ check_depends() {
     is_missing="0"
     necessary_packages=("subversion" "tar" "coreutils" "bsdextrautils" "jq")
     i="1"
-    for package in ${necessary_packages[*]}; do
+    for package in "${necessary_packages[@]}"; do
         [[ -n "$(dpkg -l | awk '{print $2}' | grep -w "^${package}$" 2>/dev/null)" ]] || is_missing="1"
         let i++
     done
@@ -79,7 +79,7 @@ check_depends() {
     if [[ "${is_missing}" -eq "1" ]]; then
         echo -e "${INFO} Start installing dependencies..."
         sudo apt-get update
-        sudo apt-get install -y ${necessary_packages[*]}
+        sudo apt-get install -y ${necessary_packages[@]}
         [[ "${?}" -ne "0" ]] && error_msg "Dependency installation failed, stop updating."
     else
         echo -e "${INFO} Dependency check completed."
@@ -90,12 +90,13 @@ check_depends() {
 
 # Checking network
 check_network() {
-    # Download from Chinese mirrors, check the status of connecting to the Chinese network
-    curl --connect-timeout 10 -s "myip.ipip.net" 2>/dev/null | grep -qo "中国" && cn_net="yes" || cn_net="no"
-
     # Download from github.com, check the status of connection to github.com
     curl --connect-timeout 10 -s "github.com" >/dev/null 2>&1 && github_net="yes" || github_net="no"
-    [[ "${github_net}" == "yes" ]] && echo -e "${INFO} You can access [ github.com ] normally."
+    if [[ "${github_net}" == "yes" ]]; then
+        echo -e "${INFO} You can access [ github.com ] normally."
+    else
+        error_msg "Your network cannot access [ github.com ], unable to query the kernel."
+    fi
 }
 
 # Get kernel TEXT_OFFSET, For u-boot.ext and u-boot.emmc
@@ -128,11 +129,10 @@ init_var() {
     KERNEL_REPO="${KERNEL_REPO}"
     KERNEL_TAGS="${KERNEL_TAGS}"
     KERNEL_BACKUP="${KERNEL_BACKUP}"
-    GITHUB_CDN="${GITHUB_CDN}"
     [[ -z "${PLATFORM}" ]] && error_msg "[ PLATFORM ] is missing, stop updating the kernel."
 
     # If it is followed by [ : ], it means that the option requires a parameter value
-    get_all_ver="$(getopt "r:u:k:c:b:m:" "${@}")"
+    get_all_ver="$(getopt "r:u:k:b:m:" "${@}")"
 
     while [[ -n "${1}" ]]; do
         case "${1}" in
@@ -158,14 +158,6 @@ init_var() {
                 shift
             else
                 error_msg "Invalid -k parameter [ ${2} ]!"
-            fi
-            ;;
-        -c | --cdn)
-            if [[ -n "${2}" ]]; then
-                GITHUB_CDN="${2}"
-                shift
-            else
-                error_msg "Invalid -c parameter [ ${2} ]!"
             fi
             ;;
         -b | --Backup_kenlel)
@@ -196,10 +188,6 @@ init_var() {
     current_kernel="$(echo "$(uname -r)" | grep -oE '^[1-9].[0-9]{1,3}.[0-9]+')"
     [[ -z "${current_kernel}" ]] && error_msg "Failed to query the current kernel version."
 
-    # Complete URL
-    [[ -n "${GITHUB_CDN}" && "${GITHUB_CDN:0-1}" != "/" ]] && GITHUB_CDN="${GITHUB_CDN}/"
-    #[[ -z "${GITHUB_CDN}" && cn_net="yes" ]] && GITHUB_CDN="https://gh...xy.com/"
-
     # Adjust the custom kernel repository url format
     [[ -z "${KERNEL_REPO}" ]] && KERNEL_REPO="ophub/kernel"
     [[ "${KERNEL_REPO}" =~ ^https: ]] && KERNEL_REPO="$(echo ${KERNEL_REPO} | awk -F'/' '{print $4"/"$5}')"
@@ -219,7 +207,6 @@ init_var() {
     # Display settings results
     echo -e "${INFO} Armbian platform: [ ${PLATFORM} ]"
     echo -e "${INFO} Kernel download repository: [ ${KERNEL_REPO} ]"
-    echo -e "${INFO} Kernel download cdn: [ ${GITHUB_CDN} ]"
     echo -e "${INFO} Kernel tags: [ ${KERNEL_TAGS} ]"
     echo -e "${INFO} Specify kernel: [ ${inputs_kernel} ]"
     echo -e "${INFO} Backup kernel: [ ${KERNEL_BACKUP} ]"
@@ -300,12 +287,12 @@ query_version() {
 
         # Check network status
         check_network
-        [[ "${github_net}" == "yes" ]] || error_msg "Your network cannot access [ github.com ], unable to query the kernel."
 
         # Query the latest version
         echo -e "${INFO} Query the latest kernel version of the [ ${kernel_verpatch} ] series within [ kernel_${KERNEL_TAGS} ]..."
         latest_version="$(
-            curl -fsSL ${kernel_api}/releases/expanded_assets/kernel_${KERNEL_TAGS} |
+            curl -fsSL \
+                ${kernel_api}/releases/expanded_assets/kernel_${KERNEL_TAGS} |
                 grep -oE "${kernel_verpatch}.[0-9]+.tar.gz" | sed 's/.tar.gz//' |
                 sort -urV | head -n 1
         )"
@@ -338,7 +325,7 @@ download_kernel() {
     echo -e "${STEPS} Start downloading kernel package..."
 
     # Download the kernel from [ releases ]
-    kernel_down_from="${GITHUB_CDN}https://github.com/${KERNEL_REPO}/releases/download/kernel_${KERNEL_TAGS}/${inputs_kernel}.tar.gz"
+    kernel_down_from="https://github.com/${KERNEL_REPO}/releases/download/kernel_${KERNEL_TAGS}/${inputs_kernel}.tar.gz"
 
     echo -e "${INFO} Download kernel from: [ ${kernel_down_from} ]"
     echo -e "${INFO} Download kernel to:   [ ${kernel_path} ]"
@@ -390,14 +377,14 @@ check_kernel() {
 
         kernel_list=("boot" "dtb-${PLATFORM}" "modules" "header")
         i="1"
-        for kernel_file in ${kernel_list[*]}; do
+        for kernel_file in "${kernel_list[@]}"; do
             # Set check filename
             tmp_file="${kernel_file}-${kernel_name}.tar.gz"
             # Check if file exists
             [[ -s "${tmp_file}" ]] || {
                 # Header file is optional
                 if [[ "${kernel_file}" == "header" ]]; then
-                    echo -e "${HINT} (${i}/4) [ ${tmp_file} ] file is missing, skip verification."
+                    echo -e "${PROMPT} (${i}/4) [ ${tmp_file} ] file is missing, skip verification."
                     let i++
                     continue
                 else
@@ -425,8 +412,8 @@ backup_kernel() {
 
     # Keep the latest 3 kernel backups and delete the others
     backup_kernel_list=($(ls ${backup_path} -lt | grep "^d" | awk '{print $9}'))
-    [[ "${#backup_kernel_list[*]}" -ge "3" ]] && {
-        for ((i = 2; i < ${#backup_kernel_list[*]}; i++)); do rm -rf ${backup_path}/${backup_kernel_list[$i]}; done
+    [[ "${#backup_kernel_list[@]}" -ge "3" ]] && {
+        for ((i = 2; i < ${#backup_kernel_list[@]}; i++)); do rm -rf ${backup_path}/${backup_kernel_list[$i]}; done
     }
 
     # Identify the current kernel files
@@ -475,7 +462,7 @@ backup_kernel() {
         [[ "${?}" -ne "0" ]] && error_msg "(4/4) Failed to move [ header-${current_kernel_signature}.tar.gz ] files."
         echo -e "${INFO} (4/4) Backup of [ header-${current_kernel_signature}.tar.gz ] succeeded."
     else
-        echo -e "${HINT} (4/4) [ /usr/src/linux-headers-${current_kernel_signature} ] folder does not exist, skip backup."
+        echo -e "${PROMPT} (4/4) [ /usr/src/linux-headers-${current_kernel_signature} ] folder does not exist, skip backup."
     fi
 
     # Add sha256sum integrity verification file
@@ -526,7 +513,7 @@ update_kernel() {
         [[ -d "/usr/src/${header_path}/include" ]] || error_msg "/usr/src/${header_path}/include folder is missing."
         echo -e "${INFO} (4/4) Unpacking [ header-${kernel_name}.tar.gz ] succeeded."
     else
-        echo -e "${HINT} (4/4) [ header-${kernel_name}.tar.gz ] file does not exist, skip unpacking."
+        echo -e "${PROMPT} (4/4) [ header-${kernel_name}.tar.gz ] file does not exist, skip unpacking."
     fi
 
     # Update release file
@@ -633,7 +620,7 @@ sos_kernel() {
         [[ "${?}" -ne "0" ]] && error_msg "(3/3) [ headers ] kernel files rescue failed."
         echo -e "${INFO} (3/3) [ headers ] kernel files rescue succeeded."
     else
-        echo -e "${HINT} (3/3) [ /usr/src/linux-headers-${kernel_signature} ] folder does not exist, skip rescue."
+        echo -e "${PROMPT} (3/3) [ /usr/src/linux-headers-${kernel_signature} ] folder does not exist, skip rescue."
     fi
 
     # Unmount the emmc partition
