@@ -293,9 +293,9 @@ check_data() {
     }
 
     # The [ specific kernel ], Use the [ kernel version number ], such as 5.15.y, 6.1.y, etc. default download from [ kernel_stable ].
-    if [[ "${auto_kernel}" == "true" || "${auto_kernel}" == "yes" ]] || [[ "${#specific_kernel[@]}" -eq "0" ]]; then
+    [[ "${auto_kernel}" == "true" || "${#specific_kernel[@]}" -eq "0" ]] && {
         specific_kernel=($(echo ${kernel_from[@]} | sed -e 's/[ ][ ]*/\n/g' | grep -E "^[0-9]+" | sort -u | xargs))
-    fi
+    }
 
     # The [ suffix ] of KERNEL_TAGS starts with a [ letter ], such as kernel_stable, kernel_rk3588, etc.
     tags_list=($(echo ${kernel_from[@]} | sed -e 's/[ ][ ]*/\n/g' | grep -E "^[a-z]" | sort -u | xargs))
@@ -1140,7 +1140,7 @@ find_armbian
 # Download the dependency files
 download_depends
 # Query the latest kernel version
-[[ "${auto_kernel}" == "true" || "${auto_kernel}" == "yes" ]] && query_kernel
+[[ "${auto_kernel}" == "true" ]] && query_kernel
 # Download the kernel files
 download_kernel
 
