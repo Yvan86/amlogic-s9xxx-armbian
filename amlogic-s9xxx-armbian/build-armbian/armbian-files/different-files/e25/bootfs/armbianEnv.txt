@@ -2,7 +2,7 @@ verbosity=1
 bootlogo=false
 fdtfile=rockchip/rk3568-radxa-e25.dtb
 rootdev=/dev/mmcblk0p2
-rootfstype=ext4 
+rootfstype=ext4
 rootflags=rw,errors=remount-ro
 console=serial
 consoleargs=console=ttyS2,115200
